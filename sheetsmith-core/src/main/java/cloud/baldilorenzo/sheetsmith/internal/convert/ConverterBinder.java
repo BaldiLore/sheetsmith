@@ -48,19 +48,38 @@ public final class ConverterBinder {
     public SheetBinding bind(SheetMetadata metadata) {
         Objects.requireNonNull(metadata, "metadata");
         List<ConfigurationError> errors = new ArrayList<>();
-        List<SheetBinding.Column> columns = new ArrayList<>();
-        for (ColumnMetadata column : metadata.columns()) {
-            CellConverter<?> converter = column.converterClass() != null
-                    ? fieldConverter(metadata.type(), column, errors)
-                    : registeredConverter(metadata.type(), column, errors);
-            if (converter != null) {
-                columns.add(new SheetBinding.Column(column, unchecked(converter)));
-            }
-        }
+        List<SheetBinding.Column> columns = bindColumns(metadata.type(), metadata.columns(), errors);
         if (!errors.isEmpty()) {
             throw new SheetsmithConfigurationException(errors);
         }
         return new SheetBinding(metadata, columns);
+    }
+
+    /**
+     * Checks that every given column can be bound, without throwing.
+     *
+     * @param type    the exported class
+     * @param columns the columns to check
+     * @return the binding errors, empty if every column can be bound
+     */
+    public List<ConfigurationError> check(Class<?> type, List<ColumnMetadata> columns) {
+        List<ConfigurationError> errors = new ArrayList<>();
+        bindColumns(Objects.requireNonNull(type, "type"), columns, errors);
+        return List.copyOf(errors);
+    }
+
+    private List<SheetBinding.Column> bindColumns(Class<?> type, List<ColumnMetadata> columns,
+                                                  List<ConfigurationError> errors) {
+        List<SheetBinding.Column> bound = new ArrayList<>();
+        for (ColumnMetadata column : columns) {
+            CellConverter<?> converter = column.converterClass() != null
+                    ? fieldConverter(type, column, errors)
+                    : registeredConverter(type, column, errors);
+            if (converter != null) {
+                bound.add(new SheetBinding.Column(column, unchecked(converter)));
+            }
+        }
+        return bound;
     }
 
     private CellConverter<?> registeredConverter(Class<?> type, ColumnMetadata column,

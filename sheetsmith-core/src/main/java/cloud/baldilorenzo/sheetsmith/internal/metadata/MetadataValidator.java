@@ -1,7 +1,6 @@
 package cloud.baldilorenzo.sheetsmith.internal.metadata;
 
 import cloud.baldilorenzo.sheetsmith.ConfigurationError;
-import cloud.baldilorenzo.sheetsmith.SheetsmithConfigurationException;
 import cloud.baldilorenzo.sheetsmith.annotation.ExcelStyle;
 import org.apache.poi.ss.usermodel.IndexedColors;
 
@@ -107,14 +106,12 @@ public final class MetadataValidator {
     }
 
     /**
-     * Throws if any error was recorded.
+     * Returns the errors recorded so far.
      *
-     * @throws SheetsmithConfigurationException listing every recorded error
+     * @return an unmodifiable copy of the errors, in the order they were found
      */
-    public void throwIfInvalid() {
-        if (!errors.isEmpty()) {
-            throw new SheetsmithConfigurationException(errors);
-        }
+    public List<ConfigurationError> errors() {
+        return List.copyOf(errors);
     }
 
     /** Ids of the validation rules checked during extraction. */

@@ -9,6 +9,8 @@ import cloud.baldilorenzo.sheetsmith.annotation.ExcelStyleSheet;
 import cloud.baldilorenzo.sheetsmith.annotation.HeaderStyles;
 import cloud.baldilorenzo.sheetsmith.style.Toggle;
 
+import java.util.Date;
+
 /** Invalid exported classes, each violating the validation rule named in its name. */
 public final class InvalidSheets {
 
@@ -115,6 +117,13 @@ public final class InvalidSheets {
     public static class V16BlankStyleName {
         @ExcelColumn(header = "A", order = 1)
         private String a;
+    }
+
+    /** Violates an extraction rule and a binding rule. */
+    @ExcelSheet
+    public record ExtractionAndBindingErrors(
+            @ExcelColumn(header = " ", order = 1) String header,
+            @ExcelColumn(header = "When", order = 2) Date when) {
     }
 
     /** Violates several rules at once. */

@@ -1,5 +1,6 @@
 package cloud.baldilorenzo.sheetsmith.internal.metadata;
 
+import cloud.baldilorenzo.sheetsmith.ConfigurationError;
 import cloud.baldilorenzo.sheetsmith.SheetsmithConfigurationException;
 import cloud.baldilorenzo.sheetsmith.annotation.BodyStyles;
 import cloud.baldilorenzo.sheetsmith.annotation.ColumnStyles;
@@ -48,13 +49,28 @@ public final class MetadataExtractor {
      * @throws SheetsmithConfigurationException listing every error of the class
      */
     public SheetMetadata extract(Class<?> type) {
+        Inspection inspection = inspect(type);
+        if (!inspection.errors().isEmpty()) {
+            throw new SheetsmithConfigurationException(inspection.errors());
+        }
+        return inspection.metadata();
+    }
+
+    /**
+     * Inspects a class without throwing: returns every error found and the columns that could be built, so that
+     * further checks, such as converter binding, can run on them.
+     *
+     * @param type the exported class
+     * @return the inspection result
+     */
+    public Inspection inspect(Class<?> type) {
         Objects.requireNonNull(type, "type");
         MetadataValidator validator = new MetadataValidator();
 
         ExcelSheet sheet = type.getAnnotation(ExcelSheet.class);
         if (sheet == null) {
             validator.error(Rules.MISSING_SHEET, type, "", "the class is not annotated with @ExcelSheet");
-            validator.throwIfInvalid();
+            return new Inspection(null, List.of(), validator.errors());
         }
 
         Map<String, StyleDefinition> styles = styleRegistry(type, sheet, validator);
@@ -73,8 +89,11 @@ public final class MetadataExtractor {
         SheetMetadata.HeaderSlots header = headerSlots(sheet.header(), resolver);
         SheetMetadata.BodySlots body = bodySlots(sheet.body(), resolver);
 
-        validator.throwIfInvalid();
-        return new SheetMetadata(
+        List<ConfigurationError> errors = validator.errors();
+        if (!errors.isEmpty()) {
+            return new Inspection(null, columns, errors);
+        }
+        SheetMetadata metadata = new SheetMetadata(
                 type,
                 title,
                 titleStyle,
@@ -86,6 +105,29 @@ public final class MetadataExtractor {
                 header,
                 body,
                 columns);
+        return new Inspection(metadata, metadata.columns(), errors);
+    }
+
+    /**
+     * Result of {@link #inspect(Class)}.
+     *
+     * @param metadata the metadata, or null when there are errors
+     * @param columns  the columns that could be built, sorted by order, even when there are errors
+     * @param errors   every error found
+     */
+    public record Inspection(SheetMetadata metadata, List<ColumnMetadata> columns, List<ConfigurationError> errors) {
+
+        /**
+         * Creates an inspection result.
+         *
+         * @param metadata the metadata, or null
+         * @param columns  the columns, not null
+         * @param errors   the errors, not null
+         */
+        public Inspection {
+            columns = List.copyOf(columns);
+            errors = List.copyOf(errors);
+        }
     }
 
     // ---- styles ----
