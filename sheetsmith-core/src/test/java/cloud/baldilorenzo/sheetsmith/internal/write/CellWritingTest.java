@@ -1,8 +1,10 @@
 package cloud.baldilorenzo.sheetsmith.internal.write;
 
+import cloud.baldilorenzo.sheetsmith.SheetsmithDefaults;
 import cloud.baldilorenzo.sheetsmith.convert.CellConverter;
 import cloud.baldilorenzo.sheetsmith.convert.CellValue;
 import cloud.baldilorenzo.sheetsmith.fixtures.WriterSheets;
+import cloud.baldilorenzo.sheetsmith.style.TablePreset;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
@@ -60,7 +62,8 @@ class CellWritingTest {
 
     @Test
     void defaultFormatsApplyOnlyWhenTheStyleSetsNoFormat() throws IOException {
-        DefaultFormats formats = new DefaultFormats("dd/mm/yyyy", "dd/mm/yyyy hh:mm", "#,##0.00");
+        SheetsmithDefaults formats = new SheetsmithDefaults("dd/mm/yyyy", "dd/mm/yyyy hh:mm", "#,##0.00",
+                TablePreset.NONE, "#4472C4");
         WorkbookWriter writer = new WorkbookWriter(WorkbookSupplier.XSSF, formats);
 
         try (XSSFWorkbook workbook = write(writer, sheet("Types", WriterSheets.AllTypes.class, List.of(ALL_TYPES)))) {

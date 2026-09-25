@@ -1,5 +1,6 @@
 package cloud.baldilorenzo.sheetsmith.internal.write;
 
+import cloud.baldilorenzo.sheetsmith.SheetsmithDefaults;
 import cloud.baldilorenzo.sheetsmith.SheetsmithGenerationException;
 import cloud.baldilorenzo.sheetsmith.convert.CellValue;
 import cloud.baldilorenzo.sheetsmith.convert.ConversionContext;
@@ -7,9 +8,11 @@ import cloud.baldilorenzo.sheetsmith.internal.convert.SheetBinding;
 import cloud.baldilorenzo.sheetsmith.internal.metadata.ColumnMetadata;
 import cloud.baldilorenzo.sheetsmith.internal.metadata.SheetMetadata;
 import cloud.baldilorenzo.sheetsmith.internal.style.CellRole;
+import cloud.baldilorenzo.sheetsmith.internal.style.PresetFactory;
 import cloud.baldilorenzo.sheetsmith.internal.style.StyleAttributes;
 import cloud.baldilorenzo.sheetsmith.internal.style.StyleCache;
 import cloud.baldilorenzo.sheetsmith.internal.style.StyleResolver;
+import cloud.baldilorenzo.sheetsmith.style.TablePreset;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
@@ -34,20 +37,20 @@ public final class SheetWriter {
     /** Maximum column width, in characters. */
     static final int MAX_WIDTH = 255;
 
-    private final DefaultFormats formats;
+    private final SheetsmithDefaults defaults;
     private final ColumnSizer columnSizer;
 
     /**
      * Creates a writer.
      *
-     * @param formats the default formats
+     * @param defaults the default formats, preset and accent colour
      */
-    public SheetWriter(DefaultFormats formats) {
-        this(formats, Sheet::autoSizeColumn);
+    public SheetWriter(SheetsmithDefaults defaults) {
+        this(defaults, Sheet::autoSizeColumn);
     }
 
-    SheetWriter(DefaultFormats formats, ColumnSizer columnSizer) {
-        this.formats = Objects.requireNonNull(formats, "formats");
+    SheetWriter(SheetsmithDefaults defaults, ColumnSizer columnSizer) {
+        this.defaults = Objects.requireNonNull(defaults, "defaults");
         this.columnSizer = Objects.requireNonNull(columnSizer, "columnSizer");
     }
 
@@ -89,7 +92,9 @@ public final class SheetWriter {
             this.metadata = input.binding().metadata();
             this.columns = input.binding().columns();
             this.rows = input.rows();
-            this.resolver = new StyleResolver(metadata);
+            TablePreset preset = metadata.preset() == TablePreset.INHERIT ? defaults.preset() : metadata.preset();
+            String accent = metadata.accentColor() != null ? metadata.accentColor() : defaults.accentColor();
+            this.resolver = new StyleResolver(metadata, PresetFactory.layers(preset, accent));
             this.headerRow = metadata.title() != null ? 1 : 0;
             this.textWidths = new int[columns.size()];
             long totalRows = headerRow + 1L + rows.size();
@@ -187,15 +192,15 @@ public final class SheetWriter {
                 textWidths[j] = Math.max(textWidths[j], string.length());
             } else if (converted instanceof CellValue.Numeric numeric) {
                 cell.setCellValue(numeric.value());
-                style = withDefaultFormat(style, formats.numberFormat());
+                style = withDefaultFormat(style, defaults.numberFormat());
             } else if (converted instanceof CellValue.Bool bool) {
                 cell.setCellValue(bool.value());
             } else if (converted instanceof CellValue.Date date) {
                 cell.setCellValue(date.value());
-                style = withDefaultFormat(style, formats.dateFormat());
+                style = withDefaultFormat(style, defaults.dateFormat());
             } else if (converted instanceof CellValue.DateTime dateTime) {
                 cell.setCellValue(dateTime.value());
-                style = withDefaultFormat(style, formats.dateTimeFormat());
+                style = withDefaultFormat(style, defaults.dateTimeFormat());
             }
             cell.setCellStyle(styles.get(style));
         }

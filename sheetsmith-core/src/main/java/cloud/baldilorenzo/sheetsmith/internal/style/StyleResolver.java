@@ -12,30 +12,42 @@ import java.util.Objects;
 public final class StyleResolver {
 
     private final SheetMetadata metadata;
+    private final PresetFactory.Layers preset;
     private final OuterBorder outerBorder;
+
+    /**
+     * Creates a resolver for a sheet without preset.
+     *
+     * @param metadata the sheet metadata
+     */
+    public StyleResolver(SheetMetadata metadata) {
+        this(metadata, PresetFactory.Layers.NONE);
+    }
 
     /**
      * Creates a resolver for a sheet.
      *
      * @param metadata the sheet metadata
+     * @param preset   the layers of the effective preset, applied below every declared style
      */
-    public StyleResolver(SheetMetadata metadata) {
+    public StyleResolver(SheetMetadata metadata, PresetFactory.Layers preset) {
         this.metadata = Objects.requireNonNull(metadata, "metadata");
+        this.preset = Objects.requireNonNull(preset, "preset");
         this.outerBorder = OuterBorder.of(metadata.outerBorder(), metadata.outerBorderColor());
     }
 
     /**
-     * Returns the style of the title.
+     * Returns the style of the title: preset title, title style.
      *
      * @return the effective title style
      */
     public StyleAttributes title() {
-        return metadata.titleStyle();
+        return preset.title().merge(metadata.titleStyle());
     }
 
     /**
-     * Returns the style of a header cell: header base, outer border edges, header last then first column, column
-     * header style.
+     * Returns the style of a header cell: preset header base, header base, outer border edges, header last then
+     * first column, column header style.
      *
      * @param column  the column of the cell
      * @param role    the role of the cell, from {@link CellRole#header(int, int)}
@@ -44,7 +56,7 @@ public final class StyleResolver {
      */
     public StyleAttributes header(ColumnMetadata column, CellRole role, boolean hasData) {
         SheetMetadata.HeaderSlots header = metadata.header();
-        StyleAttributes style = StyleAttributes.EMPTY
+        StyleAttributes style = preset.headerBase()
                 .merge(header.base())
                 .merge(outerBorder.header(role, hasData));
         if (role.lastColumn()) {
@@ -57,9 +69,9 @@ public final class StyleResolver {
     }
 
     /**
-     * Returns the style of a data cell: table base, table odd or even, outer border edges, table last then first
-     * column, table last then first row, column base, column odd or even, column last then first row, column
-     * format.
+     * Returns the style of a data cell: preset base, preset odd or even, table base, table odd or even, outer
+     * border edges, table last then first column, table last then first row, column base, column odd or even,
+     * column last then first row, column format.
      *
      * @param column the column of the cell
      * @param role   the role of the cell, from {@link CellRole#data(int, int, int, int)}
@@ -67,7 +79,8 @@ public final class StyleResolver {
      */
     public StyleAttributes body(ColumnMetadata column, CellRole role) {
         SheetMetadata.BodySlots body = metadata.body();
-        StyleAttributes style = StyleAttributes.EMPTY
+        StyleAttributes style = preset.bodyBase()
+                .merge(role.even() ? preset.bodyEven() : preset.bodyOdd())
                 .merge(body.base())
                 .merge(role.even() ? body.even() : body.odd())
                 .merge(outerBorder.body(role));

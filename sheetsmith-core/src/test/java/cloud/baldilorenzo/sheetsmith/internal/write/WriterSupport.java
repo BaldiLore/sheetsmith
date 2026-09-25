@@ -1,5 +1,6 @@
 package cloud.baldilorenzo.sheetsmith.internal.write;
 
+import cloud.baldilorenzo.sheetsmith.SheetsmithDefaults;
 import cloud.baldilorenzo.sheetsmith.convert.CellConverter;
 import cloud.baldilorenzo.sheetsmith.internal.convert.ConverterBinder;
 import cloud.baldilorenzo.sheetsmith.internal.convert.ConverterRegistry;
@@ -17,7 +18,7 @@ import java.util.Map;
 /** Writes sheets to bytes and reads them back with POI. */
 final class WriterSupport {
 
-    static final DefaultFormats STANDARD = new DefaultFormats("yyyy-mm-dd", "yyyy-mm-dd hh:mm:ss", "");
+    static final SheetsmithDefaults STANDARD = SheetsmithDefaults.standard();
 
     private static final MetadataExtractor EXTRACTOR = new MetadataExtractor();
 

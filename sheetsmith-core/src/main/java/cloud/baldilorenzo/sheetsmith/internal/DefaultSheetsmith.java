@@ -13,7 +13,6 @@ import cloud.baldilorenzo.sheetsmith.internal.convert.ReflectiveConverterFactory
 import cloud.baldilorenzo.sheetsmith.internal.convert.SheetBinding;
 import cloud.baldilorenzo.sheetsmith.internal.metadata.MetadataCache;
 import cloud.baldilorenzo.sheetsmith.internal.metadata.MetadataExtractor;
-import cloud.baldilorenzo.sheetsmith.internal.write.DefaultFormats;
 import cloud.baldilorenzo.sheetsmith.internal.write.WorkbookSupplier;
 import cloud.baldilorenzo.sheetsmith.internal.write.WorkbookWriter;
 import cloud.baldilorenzo.sheetsmith.internal.write.WritableSheet;
@@ -55,9 +54,7 @@ public final class DefaultSheetsmith implements Sheetsmith {
 
     private DefaultSheetsmith(Builder builder) {
         this.binder = new ConverterBinder(new ConverterRegistry(builder.converters), builder.factory);
-        SheetsmithDefaults defaults = builder.defaults;
-        this.writer = new WorkbookWriter(WorkbookSupplier.XSSF,
-                new DefaultFormats(defaults.dateFormat(), defaults.dateTimeFormat(), defaults.numberFormat()));
+        this.writer = new WorkbookWriter(WorkbookSupplier.XSSF, builder.defaults);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package cloud.baldilorenzo.sheetsmith.internal.write;
 
+import cloud.baldilorenzo.sheetsmith.SheetsmithDefaults;
 import cloud.baldilorenzo.sheetsmith.SheetsmithGenerationException;
 import cloud.baldilorenzo.sheetsmith.internal.style.StyleCache;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -22,10 +23,10 @@ public final class WorkbookWriter {
      * Creates a writer.
      *
      * @param workbooks creates the workbook of each generation
-     * @param formats   the default formats
+     * @param defaults  the default formats, preset and accent colour
      */
-    public WorkbookWriter(WorkbookSupplier workbooks, DefaultFormats formats) {
-        this(workbooks, new SheetWriter(formats));
+    public WorkbookWriter(WorkbookSupplier workbooks, SheetsmithDefaults defaults) {
+        this(workbooks, new SheetWriter(defaults));
     }
 
     WorkbookWriter(WorkbookSupplier workbooks, SheetWriter sheetWriter) {
