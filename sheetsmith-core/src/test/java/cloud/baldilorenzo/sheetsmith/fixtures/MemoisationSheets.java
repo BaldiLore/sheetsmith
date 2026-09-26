@@ -33,6 +33,13 @@ public final class MemoisationSheets {
         }
     }
 
+    /** Only first and last row slots: bold first row, italic last row. */
+    @ExcelSheet(body = @BodyStyles(firstRow = "first", lastRow = "last"))
+    @ExcelStyle(name = "first", bold = Toggle.TRUE)
+    @ExcelStyle(name = "last", italic = Toggle.TRUE)
+    public record FirstAndLast(@ExcelColumn(header = "Name", order = 1) String name) {
+    }
+
     /** Zebra rows, first and last row slots, a first column slot and a column whose value kind varies. */
     @ExcelSheet(header = @HeaderStyles(base = "header"),
             body = @BodyStyles(odd = "odd", even = "even", firstRow = "first", lastRow = "last",

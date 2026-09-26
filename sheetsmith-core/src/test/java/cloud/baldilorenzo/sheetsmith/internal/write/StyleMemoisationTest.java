@@ -8,6 +8,8 @@ import cloud.baldilorenzo.sheetsmith.fixtures.PresetSheets;
 import cloud.baldilorenzo.sheetsmith.fixtures.WriterSheets;
 import cloud.baldilorenzo.sheetsmith.style.TablePreset;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.jupiter.api.Test;
 
@@ -82,6 +84,33 @@ class StyleMemoisationTest {
         try (XSSFWorkbook workbook = new XSSFWorkbook(new ByteArrayInputStream(bytes))) {
             assertThat(workbook.getNumCellStyles()).isEqualTo(RECORDED_CELL_STYLES);
         }
+    }
+
+    @Test
+    void memoisationIsNotSharedAcrossSheetsOfTheSameClass() throws IOException {
+        byte[] bytes = sheetsmith.generate(List.of(
+                SheetData.of("One", MemoisationSheets.FirstAndLast.class,
+                        List.of(new MemoisationSheets.FirstAndLast("only"))),
+                SheetData.of("Three", MemoisationSheets.FirstAndLast.class, List.of(
+                        new MemoisationSheets.FirstAndLast("a"), new MemoisationSheets.FirstAndLast("b"),
+                        new MemoisationSheets.FirstAndLast("c")))));
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook(new ByteArrayInputStream(bytes))) {
+            // one data row: it is both first and last, and the first row wins
+            assertThat(font(workbook.getSheet("One"), 1).getBold()).isTrue();
+
+            Sheet three = workbook.getSheet("Three");
+            assertThat(font(three, 1).getBold()).isTrue();
+            assertThat(font(three, 1).getItalic()).isFalse();
+            assertThat(font(three, 2).getBold()).isFalse();
+            assertThat(font(three, 2).getItalic()).isFalse();
+            assertThat(font(three, 3).getItalic()).isTrue();
+            assertThat(font(three, 3).getBold()).isFalse();
+        }
+    }
+
+    private static XSSFFont font(Sheet sheet, int dataRow) {
+        return ((XSSFCellStyle) sheet.getRow(dataRow).getCell(0).getCellStyle()).getFont();
     }
 
     private static List<MemoisationSheets.Zebra> zebra(Object... values) {
