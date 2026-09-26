@@ -41,7 +41,7 @@ public final class StyleCache {
     /**
      * Creates a cache for a workbook.
      *
-     * @param workbook an {@code XSSFWorkbook} or {@code SXSSFWorkbook}
+     * @param workbook a workbook whose cell styles and fonts are {@code XSSFCellStyle} and {@code XSSFFont}
      */
     public StyleCache(Workbook workbook) {
         this.workbook = Objects.requireNonNull(workbook, "workbook");

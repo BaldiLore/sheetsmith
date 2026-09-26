@@ -4,7 +4,7 @@ package cloud.baldilorenzo.sheetsmith.convert;
  * Describes where a value is being written when a {@link CellConverter} is called.
  * <p>
  * Converters can use it to adapt the value to the sheet, the row or the field, or to build error messages. It is
- * an interface so that methods can be added in later versions without breaking existing implementations.
+ * an interface so that methods can be added without breaking existing implementations.
  *
  * @see CellConverter#convert(Object, ConversionContext)
  * @since 1.0.0

@@ -18,7 +18,9 @@ import cloud.baldilorenzo.sheetsmith.internal.write.WorkbookWriter;
 import cloud.baldilorenzo.sheetsmith.internal.write.WritableSheet;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FilterOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,7 +61,15 @@ public final class DefaultSheetsmith implements Sheetsmith {
 
     @Override
     public byte[] generate(List<SheetData<?>> sheets) {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        generate(sheets, out);
+        return out.toByteArray();
+    }
+
+    @Override
+    public void generate(List<SheetData<?>> sheets, OutputStream out) {
         Objects.requireNonNull(sheets, "sheets");
+        Objects.requireNonNull(out, "out");
         List<ConfigurationError> errors = new ArrayList<>(inputErrors(sheets));
 
         Map<Class<?>, SheetBinding> bound = new HashMap<>();
@@ -82,13 +92,22 @@ public final class DefaultSheetsmith implements Sheetsmith {
         for (SheetData<?> sheet : sheets) {
             writable.add(new WritableSheet(sheet.name(), bound.get(sheet.type()), sheet.rows()));
         }
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        FailureRecordingStream target = new FailureRecordingStream(out);
         try {
-            writer.write(writable, out);
+            writer.write(writable, target);
+            out.flush();
         } catch (IOException e) {
             throw new UncheckedIOException(e);
+        } catch (RuntimeException e) {
+            IOException failure = target.failure();
+            if (failure == null) {
+                throw e;
+            }
+            // POI can report a failure of the stream as an unchecked exception without cause
+            UncheckedIOException exception = new UncheckedIOException(failure);
+            exception.addSuppressed(e);
+            throw exception;
         }
-        return out.toByteArray();
     }
 
     @Override
@@ -141,6 +160,63 @@ public final class DefaultSheetsmith implements Sheetsmith {
             return "must not start or end with '";
         }
         return null;
+    }
+
+    /**
+     * Passes the content to the caller's stream, which it never closes, and keeps the first {@link IOException}
+     * the stream throws, so that it can be reported even when POI replaces it with an exception without cause.
+     */
+    private static final class FailureRecordingStream extends FilterOutputStream {
+
+        private IOException failure;
+
+        FailureRecordingStream(OutputStream out) {
+            super(out);
+        }
+
+        @Override
+        public void write(int b) throws IOException {
+            try {
+                out.write(b);
+            } catch (IOException e) {
+                throw record(e);
+            }
+        }
+
+        @Override
+        public void write(byte[] b, int off, int len) throws IOException {
+            try {
+                out.write(b, off, len);
+            } catch (IOException e) {
+                throw record(e);
+            }
+        }
+
+        @Override
+        public void flush() throws IOException {
+            try {
+                out.flush();
+            } catch (IOException e) {
+                throw record(e);
+            }
+        }
+
+        /** The stream belongs to the caller: closing is reduced to flushing. */
+        @Override
+        public void close() throws IOException {
+            flush();
+        }
+
+        IOException failure() {
+            return failure;
+        }
+
+        private IOException record(IOException e) {
+            if (failure == null) {
+                failure = e;
+            }
+            return e;
+        }
     }
 
     /**

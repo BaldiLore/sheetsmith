@@ -20,7 +20,9 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -67,6 +69,21 @@ public final class SheetWriter {
         new Run(workbook, styles, input).write();
     }
 
+    /** Kind of the value written to a data cell, which selects its default format; null values are blank. */
+    private enum ValueKind { TEXT, NUMERIC, BOOLEAN, DATE, DATE_TIME, BLANK }
+
+    /**
+     * Everything the final style of a data cell depends on. First and last column follow from the column index.
+     *
+     * @param column   the 0-based column index
+     * @param firstRow the cell is in the first data row
+     * @param lastRow  the cell is in the last data row
+     * @param even     the cell is in an even data row
+     * @param kind     the kind of the written value
+     */
+    private record DataStyleKey(int column, boolean firstRow, boolean lastRow, boolean even, ValueKind kind) {
+    }
+
     /** Sizes a column to its content; replaceable in tests to simulate environments without fonts. */
     @FunctionalInterface
     interface ColumnSizer {
@@ -85,6 +102,8 @@ public final class SheetWriter {
         private final Sheet sheet;
         private final int headerRow;
         private final int[] textWidths;
+        /** Final style of the data cells per column, role and value kind: the cascade runs once per key. */
+        private final Map<DataStyleKey, CellStyle> dataStyles = new HashMap<>();
 
         Run(Workbook workbook, StyleCache styles, WritableSheet input) {
             this.styles = styles;
@@ -156,7 +175,7 @@ public final class SheetWriter {
         private void writeDataCell(Cell cell, Object element, int i, int j) {
             SheetBinding.Column column = columns.get(j);
             ColumnMetadata definition = column.metadata();
-            StyleAttributes style = resolver.body(definition, CellRole.data(i, rows.size(), j, columns.size()));
+            CellRole role = CellRole.data(i, rows.size(), j, columns.size());
 
             Object value;
             try {
@@ -166,7 +185,7 @@ public final class SheetWriter {
                         name, i, definition.fieldName(), e);
             }
             if (value == null) {
-                cell.setCellStyle(styles.get(style));
+                cell.setCellStyle(dataStyle(j, definition, role, ValueKind.BLANK));
                 return;
             }
 
@@ -181,6 +200,7 @@ public final class SheetWriter {
                         + "empty cell", name, i, definition.fieldName(), null);
             }
 
+            ValueKind kind = ValueKind.BLANK;
             if (converted instanceof CellValue.Text text) {
                 String string = text.value();
                 if (string.length() > MAX_TEXT_LENGTH) {
@@ -190,19 +210,45 @@ public final class SheetWriter {
                 }
                 cell.setCellValue(string);
                 textWidths[j] = Math.max(textWidths[j], string.length());
+                kind = ValueKind.TEXT;
             } else if (converted instanceof CellValue.Numeric numeric) {
                 cell.setCellValue(numeric.value());
-                style = withDefaultFormat(style, defaults.numberFormat());
+                kind = ValueKind.NUMERIC;
             } else if (converted instanceof CellValue.Bool bool) {
                 cell.setCellValue(bool.value());
+                kind = ValueKind.BOOLEAN;
             } else if (converted instanceof CellValue.Date date) {
                 cell.setCellValue(date.value());
-                style = withDefaultFormat(style, defaults.dateFormat());
+                kind = ValueKind.DATE;
             } else if (converted instanceof CellValue.DateTime dateTime) {
                 cell.setCellValue(dateTime.value());
-                style = withDefaultFormat(style, defaults.dateTimeFormat());
+                kind = ValueKind.DATE_TIME;
             }
-            cell.setCellStyle(styles.get(style));
+            cell.setCellStyle(dataStyle(j, definition, role, kind));
+        }
+
+        /** The final style of a data cell: cascade, default format for the value kind, cache lookup, memoised. */
+        private CellStyle dataStyle(int j, ColumnMetadata column, CellRole role, ValueKind kind) {
+            DataStyleKey key = new DataStyleKey(j, role.firstRow(), role.lastRow(), role.even(), kind);
+            CellStyle style = dataStyles.get(key);
+            if (style == null) {
+                style = styles.get(withDefaultFormat(resolver.body(column, role), defaultFormat(kind)));
+                dataStyles.put(key, style);
+            }
+            return style;
+        }
+
+        private String defaultFormat(ValueKind kind) {
+            switch (kind) {
+                case NUMERIC:
+                    return defaults.numberFormat();
+                case DATE:
+                    return defaults.dateFormat();
+                case DATE_TIME:
+                    return defaults.dateTimeFormat();
+                default:
+                    return "";
+            }
         }
 
         private void applyLayout() {
@@ -223,7 +269,7 @@ public final class SheetWriter {
             }
         }
 
-        /** Falls back to an estimate when text measurement fails, typically on headless systems without fonts. */
+        /** Falls back to an estimate when text measurement fails, as on servers or containers without fonts. */
         private void autoSize(int j) {
             try {
                 columnSizer.autoSize(sheet, j);

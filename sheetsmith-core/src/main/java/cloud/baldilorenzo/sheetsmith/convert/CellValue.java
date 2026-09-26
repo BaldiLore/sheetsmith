@@ -51,6 +51,12 @@ import java.util.Objects;
  *     <tr><th scope="row">Sheet named {@code History}</th>
  *         <td>Excel reserves the name for change tracking and may refuse or repair the file</td>
  *         <td>Choose another sheet name</td></tr>
+ *     <tr><th scope="row">Very large exports</th>
+ *         <td>The whole workbook is built in memory, so memory grows with the number of cells; automatic column
+ *         sizing also takes longer as the number of rows grows</td>
+ *         <td>Measure with realistic volumes; for large sheets, disable automatic sizing and set explicit widths;
+ *         prefer {@link cloud.baldilorenzo.sheetsmith.Sheetsmith#generate(java.util.List, java.io.OutputStream)}
+ *         to avoid an extra copy of the file</td></tr>
  *   </tbody>
  * </table>
  *
