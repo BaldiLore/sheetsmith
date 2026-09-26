@@ -1,5 +1,7 @@
 package cloud.baldilorenzo.sheetsmith.internal.metadata;
 
+import cloud.baldilorenzo.sheetsmith.annotation.ExcelColumn;
+import cloud.baldilorenzo.sheetsmith.annotation.ExcelSheet;
 import cloud.baldilorenzo.sheetsmith.fixtures.ValidSheets;
 import cloud.baldilorenzo.sheetsmith.internal.style.StyleAttributes;
 import cloud.baldilorenzo.sheetsmith.style.Border;
@@ -138,5 +140,17 @@ class MetadataExtractorTest {
 
         assertThat(metadata.columns().get(1).styles().base())
                 .isEqualTo(StyleAttributes.builder().dataFormat("0.00").fontColor("#00AA00").build());
+    }
+
+    @Test
+    void sheetColoursAreNormalisedToUpperCase() {
+        SheetMetadata metadata = extractor.extract(LowerCaseColours.class);
+
+        assertThat(metadata.accentColor()).isEqualTo("#1F4E79");
+        assertThat(metadata.outerBorderColor()).isEqualTo("#A1B2C3");
+    }
+
+    @ExcelSheet(accentColor = "#1f4e79", outerBorder = Border.THIN, outerBorderColor = "#a1b2c3")
+    record LowerCaseColours(@ExcelColumn(header = "Name", order = 1) String name) {
     }
 }

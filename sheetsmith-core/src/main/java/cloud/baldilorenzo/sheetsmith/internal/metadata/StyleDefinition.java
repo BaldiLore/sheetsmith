@@ -1,6 +1,7 @@
 package cloud.baldilorenzo.sheetsmith.internal.metadata;
 
 import cloud.baldilorenzo.sheetsmith.annotation.ExcelStyle;
+import cloud.baldilorenzo.sheetsmith.internal.style.ColorUtils;
 import cloud.baldilorenzo.sheetsmith.internal.style.StyleAttributes;
 import cloud.baldilorenzo.sheetsmith.style.Toggle;
 
@@ -27,7 +28,8 @@ public record StyleDefinition(String name, StyleAttributes attributes) {
 
     /**
      * Reads a style declaration. Sentinels and {@code INHERIT} become unset attributes; all-sides borders and
-     * border colours are expanded to the sides that do not set their own value. The declaration is not validated.
+     * border colours are expanded to the sides that do not set their own value; hexadecimal colours are normalised
+     * to upper case. The declaration is not validated.
      *
      * @param style the declaration
      * @return the style definition
@@ -44,12 +46,12 @@ public record StyleDefinition(String name, StyleAttributes attributes) {
                 .borderBottom(orNull(side(style.borderBottom(), style.border())))
                 .borderLeft(orNull(side(style.borderLeft(), style.border())))
                 .borderRight(orNull(side(style.borderRight(), style.border())))
-                .borderTopColor(orNull(side(style.borderTopColor(), style.borderColor())))
-                .borderBottomColor(orNull(side(style.borderBottomColor(), style.borderColor())))
-                .borderLeftColor(orNull(side(style.borderLeftColor(), style.borderColor())))
-                .borderRightColor(orNull(side(style.borderRightColor(), style.borderColor())))
-                .fillColor(orNull(style.fillColor()))
-                .fillBackgroundColor(orNull(style.fillBackgroundColor()))
+                .borderTopColor(color(side(style.borderTopColor(), style.borderColor())))
+                .borderBottomColor(color(side(style.borderBottomColor(), style.borderColor())))
+                .borderLeftColor(color(side(style.borderLeftColor(), style.borderColor())))
+                .borderRightColor(color(side(style.borderRightColor(), style.borderColor())))
+                .fillColor(color(style.fillColor()))
+                .fillBackgroundColor(color(style.fillBackgroundColor()))
                 .fillPattern(orNull(style.fillPattern()))
                 .fontName(orNull(style.fontName()))
                 .fontSize(orNull(style.fontSize()))
@@ -57,7 +59,7 @@ public record StyleDefinition(String name, StyleAttributes attributes) {
                 .italic(toBoolean(style.italic()))
                 .strikeout(toBoolean(style.strikeout()))
                 .underline(orNull(style.underline()))
-                .fontColor(orNull(style.fontColor()))
+                .fontColor(color(style.fontColor()))
                 .script(orNull(style.script()))
                 .dataFormat(orNull(style.dataFormat()))
                 .locked(toBoolean(style.locked()))
@@ -81,6 +83,10 @@ public record StyleDefinition(String name, StyleAttributes attributes) {
 
     private static String orNull(String value) {
         return value.isEmpty() ? null : value;
+    }
+
+    private static String color(String value) {
+        return ColorUtils.normalize(orNull(value));
     }
 
     private static Integer orNull(int value) {

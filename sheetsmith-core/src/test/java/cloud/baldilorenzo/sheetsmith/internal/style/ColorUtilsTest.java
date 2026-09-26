@@ -34,6 +34,14 @@ class ColorUtilsTest {
     }
 
     @Test
+    void normalizeUpperCasesHexColoursOnly() {
+        assertThat(ColorUtils.normalize("#4472c4")).isEqualTo("#4472C4");
+        assertThat(ColorUtils.normalize("#4472C4")).isEqualTo("#4472C4");
+        assertThat(ColorUtils.normalize("DARK_BLUE")).isEqualTo("DARK_BLUE");
+        assertThat(ColorUtils.normalize(null)).isNull();
+    }
+
+    @Test
     void indexedColoursUseTheirDefaultRgb() {
         assertThat(ColorUtils.rgb("DARK_RED")).containsExactly(128, 0, 0);
         assertThat(ColorUtils.tint("WHITE", 0.5)).isEqualTo("#FFFFFF");

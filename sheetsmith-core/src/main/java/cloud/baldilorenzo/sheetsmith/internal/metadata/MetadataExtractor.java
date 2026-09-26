@@ -11,6 +11,7 @@ import cloud.baldilorenzo.sheetsmith.annotation.ExcelStyleSheet;
 import cloud.baldilorenzo.sheetsmith.annotation.HeaderStyles;
 import cloud.baldilorenzo.sheetsmith.convert.CellConverter;
 import cloud.baldilorenzo.sheetsmith.internal.metadata.MetadataValidator.Rules;
+import cloud.baldilorenzo.sheetsmith.internal.style.ColorUtils;
 import cloud.baldilorenzo.sheetsmith.internal.style.StyleAttributes;
 import cloud.baldilorenzo.sheetsmith.style.Border;
 
@@ -99,9 +100,9 @@ public final class MetadataExtractor {
                 titleStyle,
                 new SheetMetadata.Options(sheet.freezeHeader(), sheet.autoFilter(), sheet.autoSizeColumns()),
                 sheet.preset(),
-                emptyToNull(sheet.accentColor()),
+                ColorUtils.normalize(emptyToNull(sheet.accentColor())),
                 sheet.outerBorder() == Border.INHERIT ? null : sheet.outerBorder(),
-                emptyToNull(sheet.outerBorderColor()),
+                ColorUtils.normalize(emptyToNull(sheet.outerBorderColor())),
                 header,
                 body,
                 columns);

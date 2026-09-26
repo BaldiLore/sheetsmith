@@ -16,6 +16,17 @@ public final class ColorUtils {
     }
 
     /**
+     * Returns a colour in canonical form: hexadecimal colours in upper case, {@link IndexedColors} names unchanged.
+     * Equal colours written with different case therefore give equal style attributes, and share one cell style.
+     *
+     * @param color the colour, or null
+     * @return the canonical colour, or null when the input is null
+     */
+    public static String normalize(String color) {
+        return color != null && color.startsWith("#") ? color.toUpperCase(Locale.ROOT) : color;
+    }
+
+    /**
      * Mixes a colour with white.
      *
      * @param color    the colour

@@ -55,6 +55,12 @@ class PresetFactoryTest {
                 StyleAttributes.builder().fillColor("#335693").fontColor(WHITE).build()));
     }
 
+    @ParameterizedTest
+    @EnumSource(value = TablePreset.class, names = {"LIGHT", "MEDIUM", "DARK"})
+    void accentCaseDoesNotChangeTheLayers(TablePreset preset) {
+        assertThat(PresetFactory.layers(preset, "#4472c4")).isEqualTo(PresetFactory.layers(preset, A));
+    }
+
     @Test
     void textOnLightAccentsIsBlack() {
         PresetFactory.Layers medium = PresetFactory.layers(TablePreset.MEDIUM, "#FFC000");

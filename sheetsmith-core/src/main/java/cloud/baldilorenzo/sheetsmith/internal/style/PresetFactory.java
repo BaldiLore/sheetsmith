@@ -39,15 +39,16 @@ public final class PresetFactory {
     public static Layers layers(TablePreset preset, String accent) {
         Objects.requireNonNull(preset, "preset");
         Objects.requireNonNull(accent, "accent");
+        String color = ColorUtils.normalize(accent);
         switch (preset) {
             case NONE:
                 return Layers.NONE;
             case LIGHT:
-                return light(accent);
+                return light(color);
             case MEDIUM:
-                return medium(accent);
+                return medium(color);
             case DARK:
-                return dark(accent);
+                return dark(color);
             default:
                 throw new IllegalArgumentException("the preset must be resolved before building its layers: "
                         + preset);

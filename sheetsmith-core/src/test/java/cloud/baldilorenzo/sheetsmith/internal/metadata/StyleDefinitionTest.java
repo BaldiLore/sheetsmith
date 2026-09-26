@@ -24,6 +24,8 @@ class StyleDefinitionTest {
             bold = Toggle.TRUE, italic = Toggle.FALSE, strikeout = Toggle.TRUE, underline = Underline.DOUBLE,
             fontColor = "#FF0000", script = Script.SUPER, dataFormat = "0.0", locked = Toggle.FALSE,
             hidden = Toggle.TRUE, quotePrefix = Toggle.TRUE)
+    @ExcelStyle(name = "lowerCase", borderColor = "#a1b2c3", fillColor = "#ffcc00",
+            fillBackgroundColor = "#00ff00", fontColor = "#abcdef")
     private static final class Styles {
     }
 
@@ -56,6 +58,15 @@ class StyleDefinitionTest {
                 .fontName("Arial").fontSize(11).bold(true).italic(false).strikeout(true)
                 .underline(Underline.DOUBLE).fontColor("#FF0000").script(Script.SUPER).dataFormat("0.0")
                 .locked(false).hidden(true).quotePrefix(true)
+                .build());
+    }
+
+    @Test
+    void hexadecimalColoursAreNormalisedToUpperCase() {
+        StyleAttributes attributes = StyleDefinition.from(style("lowerCase")).attributes();
+
+        assertThat(attributes).isEqualTo(StyleAttributes.builder()
+                .borderColor("#A1B2C3").fillColor("#FFCC00").fillBackgroundColor("#00FF00").fontColor("#ABCDEF")
                 .build());
     }
 
