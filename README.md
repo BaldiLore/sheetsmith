@@ -4,8 +4,6 @@ Annotation-driven Excel generation for Spring Boot, built on Apache POI.
 
 Describe a table once with annotations, pass a list of objects, get an `.xlsx` file as `byte[]`: title, header, rows, styles, presets and formats included.
 
-> Work in progress: the API is not stable until version 1.0.
-
 ## Quick start
 
 Add the starter:

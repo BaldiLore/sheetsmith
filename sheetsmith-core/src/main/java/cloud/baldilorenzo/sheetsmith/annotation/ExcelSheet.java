@@ -131,9 +131,9 @@ public @interface ExcelSheet {
      * <p>
      * Columns with {@link ExcelColumn#width()} set are never auto-sized. Sizing measures the text with the fonts
      * installed on the machine, and can fail on servers or containers without installed fonts. When it fails, the
-     * width falls back to an estimate: the length in characters of the longest header or text value of the
-     * column, plus 2, at most 255. The time spent sizing grows with the number of rows: for large sheets, disable
-     * it and set explicit widths.
+     * width falls back to an estimate: the length in characters of the longest header or data value of the column
+     * as Excel displays it, with its format applied, plus 2, at most 255. The time spent sizing grows with the
+     * number of rows: for large sheets, disable it and set explicit widths.
      *
      * @return true, the default, to auto-size columns
      */

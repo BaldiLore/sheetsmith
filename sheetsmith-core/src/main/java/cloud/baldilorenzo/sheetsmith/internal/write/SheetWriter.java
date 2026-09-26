@@ -15,6 +15,7 @@ import cloud.baldilorenzo.sheetsmith.internal.style.StyleResolver;
 import cloud.baldilorenzo.sheetsmith.style.TablePreset;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -22,6 +23,7 @@ import org.apache.poi.ss.util.CellRangeAddress;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
@@ -101,9 +103,9 @@ public final class SheetWriter {
         private final StyleResolver resolver;
         private final Sheet sheet;
         private final int headerRow;
-        private final int[] textWidths;
         /** Final style of the data cells per column, role and value kind: the cascade runs once per key. */
         private final Map<DataStyleKey, CellStyle> dataStyles = new HashMap<>();
+        private DataFormatter formatter;
 
         Run(Workbook workbook, StyleCache styles, WritableSheet input) {
             this.styles = styles;
@@ -115,7 +117,6 @@ public final class SheetWriter {
             String accent = metadata.accentColor() != null ? metadata.accentColor() : defaults.accentColor();
             this.resolver = new StyleResolver(metadata, PresetFactory.layers(preset, accent));
             this.headerRow = metadata.title() != null ? 1 : 0;
-            this.textWidths = new int[columns.size()];
             long totalRows = headerRow + 1L + rows.size();
             if (totalRows > MAX_ROWS) {
                 throw new SheetsmithGenerationException("the sheet needs " + totalRows
@@ -157,7 +158,6 @@ public final class SheetWriter {
                 Cell cell = row.createCell(j);
                 cell.setCellValue(column.header());
                 cell.setCellStyle(styles.get(resolver.header(column, CellRole.header(j, m), hasData)));
-                textWidths[j] = column.header().length();
             }
         }
 
@@ -209,7 +209,6 @@ public final class SheetWriter {
                             definition.fieldName(), null);
                 }
                 cell.setCellValue(string);
-                textWidths[j] = Math.max(textWidths[j], string.length());
                 kind = ValueKind.TEXT;
             } else if (converted instanceof CellValue.Numeric numeric) {
                 cell.setCellValue(numeric.value());
@@ -274,8 +273,24 @@ public final class SheetWriter {
             try {
                 columnSizer.autoSize(sheet, j);
             } catch (RuntimeException | LinkageError | InternalError e) {
-                sheet.setColumnWidth(j, Math.min(textWidths[j] + 2, MAX_WIDTH) * 256);
+                sheet.setColumnWidth(j, Math.min(estimatedWidth(j) + 2, MAX_WIDTH) * 256);
             }
+        }
+
+        /** Length in characters of the longest header or data value of the column, as Excel displays it. */
+        private int estimatedWidth(int j) {
+            if (formatter == null) {
+                formatter = new DataFormatter(Locale.ROOT);
+            }
+            int longest = 0;
+            for (int r = headerRow; r <= sheet.getLastRowNum(); r++) {
+                Row row = sheet.getRow(r);
+                Cell cell = row == null ? null : row.getCell(j);
+                if (cell != null) {
+                    longest = Math.max(longest, formatter.formatCellValue(cell).length());
+                }
+            }
+            return longest;
         }
 
         private StyleAttributes withDefaultFormat(StyleAttributes style, String format) {
