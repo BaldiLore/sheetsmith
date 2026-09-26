@@ -6,7 +6,7 @@
 
     <groupId>cloud.baldilorenzo</groupId>
     <artifactId>sheetsmith-parent</artifactId>
-    <version>0.2.0-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>sheetsmith</name>
@@ -143,7 +143,19 @@
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>${maven-javadoc-plugin.version}</version>
                     <configuration>
-                        <doclint>all,-missing</doclint>
+                        <release>${java.release}</release>
+                        <!-- Every check, missing comments included: the published Javadoc must stay complete -->
+                        <doclint>all</doclint>
+                        <failOnWarnings>true</failOnWarnings>
+                        <!--
+                            Internal packages are not part of the API and are not published. The wildcard matches
+                            only the subpackages, so the internal package itself is listed too.
+                        -->
+                        <excludePackageNames>cloud.baldilorenzo.sheetsmith.internal:cloud.baldilorenzo.sheetsmith.internal*</excludePackageNames>
+                        <overview>${project.basedir}/src/main/javadoc/overview.html</overview>
+                        <doctitle>${project.name} ${project.version} API</doctitle>
+                        <windowtitle>${project.name} ${project.version} API</windowtitle>
+                        <bottom>Copyright &#169; 2026 Lorenzo Baldi. Licensed under the Apache License 2.0.</bottom>
                     </configuration>
                 </plugin>
                 <plugin>

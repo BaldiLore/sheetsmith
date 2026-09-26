@@ -18,9 +18,17 @@ import java.util.Objects;
 import java.util.TreeSet;
 
 /**
- * Validates, once all singletons are created, every class annotated with {@link ExcelSheet} found in the configured
- * packages. Invalid classes stop the application with one {@link SheetsmithConfigurationException} listing the
- * errors of all of them.
+ * Validates the sheet classes of the configured packages when the application starts.
+ * <p>
+ * Registered by {@link SheetsmithAutoConfiguration} when {@code sheetsmith.validation.packages} is not empty. Once
+ * all singletons are created, it scans the packages and their subpackages for classes annotated with
+ * {@link ExcelSheet}, and calls {@link Sheetsmith#validate(Class)} on each of them with the {@link Sheetsmith} bean
+ * of the context, so that converter beans are taken into account. The errors of all the invalid classes are
+ * collected into one {@link SheetsmithConfigurationException}, which stops the application: mistakes in sheet
+ * classes surface at startup instead of at the first generation.
+ *
+ * @see SheetsmithProperties.Validation
+ * @since 1.0.0
  */
 public class SheetsmithStartupValidator implements SmartInitializingSingleton {
 
@@ -32,10 +40,11 @@ public class SheetsmithStartupValidator implements SmartInitializingSingleton {
     /**
      * Creates the validator.
      *
-     * @param sheetsmith     validates each class
-     * @param packages       the packages to scan
-     * @param environment    the application environment
-     * @param resourceLoader loads the scanned classes
+     * @param sheetsmith     the generator that validates each class, not null
+     * @param packages       the packages to scan, not null
+     * @param environment    the application environment, not null
+     * @param resourceLoader loads the scanned classes, not null
+     * @throws NullPointerException if an argument is null
      */
     public SheetsmithStartupValidator(Sheetsmith sheetsmith, List<String> packages, Environment environment,
                                       ResourceLoader resourceLoader) {
@@ -46,7 +55,7 @@ public class SheetsmithStartupValidator implements SmartInitializingSingleton {
     }
 
     /**
-     * Scans the packages and validates every annotated class found.
+     * Scans the packages and validates every sheet class found.
      *
      * @throws SheetsmithConfigurationException listing the errors of every invalid class
      */

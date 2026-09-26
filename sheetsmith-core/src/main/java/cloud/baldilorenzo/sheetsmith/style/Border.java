@@ -1,54 +1,61 @@
 package cloud.baldilorenzo.sheetsmith.style;
 
 /**
- * Line style of a cell border.
+ * Line of a cell border, the value of the border attributes of
+ * {@link cloud.baldilorenzo.sheetsmith.annotation.ExcelStyle} and of
+ * {@link cloud.baldilorenzo.sheetsmith.annotation.ExcelSheet#outerBorder()}.
  * <p>
- * Mirrors {@link org.apache.poi.ss.usermodel.BorderStyle}, plus {@link #INHERIT}.
+ * Mirrors {@link org.apache.poi.ss.usermodel.BorderStyle}: every constant other than {@link #INHERIT} has the same
+ * name as a constant of that enum, and every constant of that enum has a counterpart here. {@link #INHERIT}, the
+ * default of the attributes, means that the attribute is not set; on
+ * {@link cloud.baldilorenzo.sheetsmith.annotation.ExcelSheet#outerBorder()} it means no frame.
+ *
+ * @since 1.0.0
  */
 public enum Border {
 
-    /** Not set at this level: the value of the level below is kept. */
+    /** Not set: keeps the value of the lower cascade level. */
     INHERIT,
 
-    /** No border. */
+    /** No line, removing a line set by a lower cascade level. */
     NONE,
 
-    /** Thin line. */
+    /** Thin solid line. */
     THIN,
 
-    /** Medium line. */
+    /** Medium weight solid line. */
     MEDIUM,
 
-    /** Dashed line. */
+    /** Thin dashed line. */
     DASHED,
 
-    /** Dotted line. */
+    /** Thin dotted line. */
     DOTTED,
 
-    /** Thick line. */
+    /** Thick solid line. */
     THICK,
 
-    /** Double line. */
+    /** Double thin line. */
     DOUBLE,
 
-    /** Hair line, the thinnest available. */
+    /** Hairline, the thinnest line available. */
     HAIR,
 
-    /** Medium dashed line. */
+    /** Medium weight dashed line. */
     MEDIUM_DASHED,
 
-    /** Dash-dot line. */
+    /** Thin line of alternating dashes and dots. */
     DASH_DOT,
 
-    /** Medium dash-dot line. */
+    /** Medium weight line of alternating dashes and dots. */
     MEDIUM_DASH_DOT,
 
-    /** Dash-dot-dot line. */
+    /** Thin line of dashes, each followed by two dots. */
     DASH_DOT_DOT,
 
-    /** Medium dash-dot-dot line. */
+    /** Medium weight line of dashes, each followed by two dots. */
     MEDIUM_DASH_DOT_DOT,
 
-    /** Slanted dash-dot line. */
+    /** Medium weight line of slanted dashes and dots. */
     SLANTED_DASH_DOT
 }

@@ -1,27 +1,32 @@
 package cloud.baldilorenzo.sheetsmith.style;
 
 /**
- * Vertical alignment of the content of a cell.
+ * Vertical alignment of the content of a cell, the value of
+ * {@link cloud.baldilorenzo.sheetsmith.annotation.ExcelStyle#verticalAlign()}.
  * <p>
- * Mirrors {@link org.apache.poi.ss.usermodel.VerticalAlignment}, plus {@link #INHERIT}.
+ * Mirrors {@link org.apache.poi.ss.usermodel.VerticalAlignment}: every constant other than {@link #INHERIT} has
+ * the same name as a constant of that enum, and every constant of that enum has a counterpart here.
+ * {@link #INHERIT}, the default of the style attribute, means that the attribute is not set.
+ *
+ * @since 1.0.0
  */
 public enum VerticalAlign {
 
-    /** Not set at this level: the value of the level below is kept. */
+    /** Not set: keeps the value of the lower cascade level. */
     INHERIT,
 
-    /** Aligned to the top of the cell. */
+    /** Content aligned to the top edge of the cell. */
     TOP,
 
-    /** Centred vertically. */
+    /** Content centred vertically in the cell. */
     CENTER,
 
-    /** Aligned to the bottom of the cell. */
+    /** Content aligned to the bottom edge of the cell, the Excel default. */
     BOTTOM,
 
-    /** Justified vertically. */
+    /** Lines of wrapped text spaced so that they fill the height of the cell. */
     JUSTIFY,
 
-    /** Distributed vertically. */
+    /** Lines of wrapped text spread evenly across the height of the cell. */
     DISTRIBUTED
 }

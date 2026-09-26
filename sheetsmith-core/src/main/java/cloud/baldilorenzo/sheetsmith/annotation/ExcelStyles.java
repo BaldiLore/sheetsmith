@@ -8,6 +8,11 @@ import java.lang.annotation.Target;
 
 /**
  * Container of repeated {@link ExcelStyle} annotations.
+ * <p>
+ * The compiler uses it when {@link ExcelStyle} is repeated on a class. It is not meant to be written directly:
+ * repeat {@link ExcelStyle} instead.
+ *
+ * @since 1.0.0
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
@@ -15,7 +20,7 @@ import java.lang.annotation.Target;
 public @interface ExcelStyles {
 
     /**
-     * The contained styles.
+     * Returns the contained styles, in declaration order.
      *
      * @return the styles
      */

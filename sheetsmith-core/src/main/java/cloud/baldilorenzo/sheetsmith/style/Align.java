@@ -1,36 +1,41 @@
 package cloud.baldilorenzo.sheetsmith.style;
 
 /**
- * Horizontal alignment of the content of a cell.
+ * Horizontal alignment of the content of a cell, the value of
+ * {@link cloud.baldilorenzo.sheetsmith.annotation.ExcelStyle#align()}.
  * <p>
- * Mirrors {@link org.apache.poi.ss.usermodel.HorizontalAlignment}, plus {@link #INHERIT}.
+ * Mirrors {@link org.apache.poi.ss.usermodel.HorizontalAlignment}: every constant other than {@link #INHERIT} has
+ * the same name as a constant of that enum, and every constant of that enum has a counterpart here.
+ * {@link #INHERIT}, the default of the style attribute, means that the attribute is not set.
+ *
+ * @since 1.0.0
  */
 public enum Align {
 
-    /** Not set at this level: the value of the level below is kept. */
+    /** Not set: keeps the value of the lower cascade level. */
     INHERIT,
 
-    /** Text left, numbers right, as Excel does by default. */
+    /** Excel default alignment: text to the left, numbers and dates to the right. */
     GENERAL,
 
-    /** Left aligned. */
+    /** Content aligned to the left edge of the cell. */
     LEFT,
 
-    /** Centred. */
+    /** Content centred horizontally in the cell. */
     CENTER,
 
-    /** Right aligned. */
+    /** Content aligned to the right edge of the cell. */
     RIGHT,
 
-    /** Content repeated to fill the cell width. */
+    /** Content repeated to fill the width of the cell. */
     FILL,
 
-    /** Justified, wrapping text on several lines. */
+    /** Text wrapped and spaced so that each line reaches both edges of the cell. */
     JUSTIFY,
 
-    /** Centred across the selection of adjacent cells. */
+    /** Content centred across adjacent cells that use this alignment, without merging them. */
     CENTER_SELECTION,
 
-    /** Distributed, with each line spread across the cell width. */
+    /** Text wrapped, with the words of each line spread evenly across the width of the cell. */
     DISTRIBUTED
 }

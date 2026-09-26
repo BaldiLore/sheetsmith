@@ -25,8 +25,48 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Auto-configuration of sheetsmith: a {@link Sheetsmith} bean configured from {@link SheetsmithProperties}, with
- * every {@link CellConverter} bean registered for its type, and optional startup validation of annotated classes.
+ * Auto-configuration of sheetsmith for Spring Boot applications.
+ * <p>
+ * It applies when {@link Sheetsmith} is on the classpath, which the sheetsmith starter guarantees, and registers:
+ * <ul>
+ *   <li>a {@link Sheetsmith} bean, unless the application defines its own bean of that type, in which case this
+ *       one backs off and the application bean is used as it is. The auto-configured bean is built with the
+ *       defaults bound from {@link SheetsmithProperties}, a {@link SpringConverterFactory} for field converters,
+ *       and every {@link CellConverter} bean of the context as an application converter;</li>
+ *   <li>a {@link SheetsmithStartupValidator}, only when {@code sheetsmith.validation.packages} is not empty.</li>
+ * </ul>
+ *
+ * <h2>Converter beans</h2>
+ * Every bean implementing {@link CellConverter} is registered as an application converter for the type it handles,
+ * so it applies to the columns of that type and of its subtypes in every sheet class. The type is read from the
+ * generic declaration: first from the type of the bean definition, then from the class of the bean. Declare
+ * converter beans either as classes that implement {@code CellConverter<T>}, or as {@code @Bean} methods whose
+ * return type is {@code CellConverter<T>}:
+ * <pre>
+ * &#64;Component
+ * public class MoneyConverter implements CellConverter&lt;Money&gt; {
+ *     &#64;Override
+ *     public CellValue convert(Money value, ConversionContext context) {
+ *         return CellValue.number(value.amount().doubleValue());
+ *     }
+ * }
+ *
+ * &#64;Bean
+ * CellConverter&lt;UUID&gt; uuidConverter() {
+ *     return (value, context) -&gt; CellValue.text(value.toString());
+ * }
+ * </pre>
+ * Startup fails with an {@link IllegalStateException} when the handled type of a converter bean cannot be
+ * determined, for example a raw type, or when two converter beans handle the same type; the message names the
+ * beans involved.
+ * <p>
+ * A converter bean is also available as a field converter through {@link SpringConverterFactory}. Because every
+ * converter bean is registered application-wide, a converter meant for one column only should not be a bean.
+ *
+ * @see SheetsmithProperties
+ * @see SpringConverterFactory
+ * @see SheetsmithStartupValidator
+ * @since 1.0.0
  */
 @AutoConfiguration
 @ConditionalOnClass(Sheetsmith.class)
@@ -34,20 +74,24 @@ import java.util.Map;
 public class SheetsmithAutoConfiguration {
 
     /**
-     * Creates the auto-configuration.
+     * Creates the auto-configuration. Instantiated by Spring Boot, not by applications.
      */
     public SheetsmithAutoConfiguration() {
     }
 
     /**
      * Creates the {@link Sheetsmith} bean, unless the application defines one.
+     * <p>
+     * The bean uses the defaults of {@link SheetsmithProperties#toDefaults()}, a {@link SpringConverterFactory}, and
+     * every {@link CellConverter} bean registered for its generic type.
      *
      * @param properties  the sheetsmith properties
-     * @param beanFactory the bean factory, to find converter beans and create field-level converters
+     * @param beanFactory the bean factory, to find converter beans and create field converters
      * @return the generator
-     * @throws IllegalStateException    if the type of a converter bean cannot be resolved, or two converter beans
-     *                                  handle the same type
-     * @throws IllegalArgumentException if a property value is invalid
+     * @throws IllegalStateException    if the type handled by a converter bean cannot be resolved, or two converter
+     *                                  beans handle the same type
+     * @throws IllegalArgumentException if a property value is invalid, for example {@code sheetsmith.preset=INHERIT}
+     *                                  or an invalid {@code sheetsmith.accent-color}
      */
     @Bean
     @ConditionalOnMissingBean
@@ -60,7 +104,10 @@ public class SheetsmithAutoConfiguration {
     }
 
     /**
-     * Creates the startup validator when {@code sheetsmith.validation.packages} is not empty.
+     * Creates the startup validator, only when {@code sheetsmith.validation.packages} is not empty.
+     * <p>
+     * The validator uses the {@link Sheetsmith} bean of the context, auto-configured or defined by the application,
+     * so it takes the converters of the application into account.
      *
      * @param sheetsmith     the generator used to validate
      * @param properties     the sheetsmith properties

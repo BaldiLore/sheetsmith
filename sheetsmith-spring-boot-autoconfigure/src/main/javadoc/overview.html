@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>sheetsmith Spring Boot autoconfigure</title>
+</head>
+<body>
+<p>
+This module integrates sheetsmith, the annotation-driven Excel generator built on Apache POI, with Spring Boot 4.
+With it on the classpath, usually through the sheetsmith starter, a {@code Sheetsmith} bean is available without
+any configuration. The bean is configured from the {@code sheetsmith.*} properties, uses every {@code CellConverter}
+bean of the application as an application converter, and creates field converters through the application
+context. Optionally, the sheet classes of given packages are validated at startup.
+</p>
+
+<h1>Example</h1>
+<pre>
+&#64;Service
+public class CustomerExport {
+
+    private final Sheetsmith sheetsmith;
+
+    public CustomerExport(Sheetsmith sheetsmith) {
+        this.sheetsmith = sheetsmith;
+    }
+
+    public byte[] export(List&lt;CustomerRow&gt; customers) {
+        return sheetsmith.generate(List.of(SheetData.of("Customers", CustomerRow.class, customers)));
+    }
+}
+</pre>
+
+<h1>Packages</h1>
+<ul>
+  <li>{@link cloud.baldilorenzo.sheetsmith.autoconfigure}: the auto-configuration, the configuration properties,
+      the Spring converter factory and the startup validator.</li>
+</ul>
+
+<h1>Maven coordinates</h1>
+<p>
+Applications depend on the starter, which brings this module, the sheetsmith core and Spring Boot:
+</p>
+<pre>
+&lt;dependency&gt;
+    &lt;groupId&gt;cloud.baldilorenzo&lt;/groupId&gt;
+    &lt;artifactId&gt;sheetsmith-spring-boot-starter&lt;/artifactId&gt;
+    &lt;version&gt;${sheetsmith.version}&lt;/version&gt;
+&lt;/dependency&gt;
+</pre>
+<p>
+Replace {@code ${sheetsmith.version}} with the version of this documentation. This module itself is published as
+{@code cloud.baldilorenzo:sheetsmith-spring-boot-autoconfigure}.
+</p>
+
+<h1>Source code</h1>
+<p>
+The source code, the issue tracker and the releases are on
+<a href="https://github.com/BaldiLore/sheetsmith">GitHub</a>.
+</p>
+</body>
+</html>

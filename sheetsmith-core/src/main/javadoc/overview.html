@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>sheetsmith core</title>
+</head>
+<body>
+<p>
+sheetsmith generates Excel files ({@code .xlsx}) from lists of annotated Java objects, using Apache POI. This
+module is the core of the library: you describe a table once, with annotations on a class, and pass the data at
+runtime; sheetsmith writes the title, the header, the rows and the styles, and returns the file as a
+{@code byte[]}. It has no dependency on Spring and works in any Java 17 or later application; Spring Boot
+applications use the sheetsmith starter, which adds the auto-configuration.
+</p>
+
+<h1>Example</h1>
+<pre>
+&#64;ExcelSheet(title = "Customers")
+public record CustomerRow(
+        &#64;ExcelColumn(header = "Name", order = 10) String name,
+        &#64;ExcelColumn(header = "Customer since", order = 20) LocalDate since,
+        &#64;ExcelColumn(header = "Revenue", order = 30, format = "#,##0.00") BigDecimal revenue) {
+}
+
+Sheetsmith sheetsmith = Sheetsmith.builder().build();   // create once and share
+
+byte[] file = sheetsmith.generate(List.of(SheetData.of("Customers", CustomerRow.class, customers)));
+</pre>
+
+<h1>Packages</h1>
+<ul>
+  <li>{@link cloud.baldilorenzo.sheetsmith}: the generator, the sheet data, the application defaults and the
+      exceptions.</li>
+  <li>{@link cloud.baldilorenzo.sheetsmith.annotation}: the annotations that describe a sheet class, and the
+      reference of the style cascade.</li>
+  <li>{@link cloud.baldilorenzo.sheetsmith.style}: the enums used as style attribute values, and the presets.</li>
+  <li>{@link cloud.baldilorenzo.sheetsmith.convert}: converters, which turn field values into cell values.</li>
+</ul>
+
+<h1>Maven coordinates</h1>
+<pre>
+&lt;dependency&gt;
+    &lt;groupId&gt;cloud.baldilorenzo&lt;/groupId&gt;
+    &lt;artifactId&gt;sheetsmith-core&lt;/artifactId&gt;
+    &lt;version&gt;${sheetsmith.version}&lt;/version&gt;
+&lt;/dependency&gt;
+</pre>
+<p>
+Replace {@code ${sheetsmith.version}} with the version of this documentation. In Spring Boot applications, depend
+on {@code cloud.baldilorenzo:sheetsmith-spring-boot-starter} instead: it brings this module and the
+auto-configuration.
+</p>
+
+<h1>Source code</h1>
+<p>
+The source code, the issue tracker and the releases are on
+<a href="https://github.com/BaldiLore/sheetsmith">GitHub</a>.
+</p>
+</body>
+</html>
