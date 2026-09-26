@@ -14,6 +14,7 @@ import java.lang.annotation.Target;
  * styles by name as if they were declared on the class. The rules are:
  * <ul>
  *   <li>only classes carrying this annotation can be referenced (rule V-09);</li>
+ *   <li>style names must be unique within the style sheet itself (rule V-07);</li>
  *   <li>the style sheets referenced by one sheet class must not define the same style name (rule V-08);</li>
  *   <li>a style declared on the sheet class wins over a style with the same name from a style sheet, and replaces
  *       it entirely.</li>

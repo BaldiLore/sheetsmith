@@ -5,6 +5,7 @@ import cloud.baldilorenzo.sheetsmith.Sheetsmith;
 import cloud.baldilorenzo.sheetsmith.SheetsmithConfigurationException;
 import cloud.baldilorenzo.sheetsmith.annotation.ExcelSheet;
 import org.springframework.beans.factory.SmartInitializingSingleton;
+import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.env.Environment;
@@ -21,11 +22,16 @@ import java.util.TreeSet;
  * Validates the sheet classes of the configured packages when the application starts.
  * <p>
  * Registered by {@link SheetsmithAutoConfiguration} when {@code sheetsmith.validation.packages} is not empty. Once
- * all singletons are created, it scans the packages and their subpackages for classes annotated with
- * {@link ExcelSheet}, and calls {@link Sheetsmith#validate(Class)} on each of them with the {@link Sheetsmith} bean
- * of the context, so that converter beans are taken into account. The errors of all the invalid classes are
- * collected into one {@link SheetsmithConfigurationException}, which stops the application: mistakes in sheet
- * classes surface at startup instead of at the first generation.
+ * all singletons are created, it scans the packages and their subpackages, and calls
+ * {@link Sheetsmith#validate(Class)} with the {@link Sheetsmith} bean of the context, so that converter beans are
+ * taken into account.
+ * <p>
+ * Every type annotated directly with {@link ExcelSheet} is validated: concrete and abstract classes, interfaces,
+ * and nested classes, static or not. Annotation types are not validated, even when annotated with
+ * {@code @ExcelSheet}, and neither are types only meta-annotated with it, through another annotation.
+ * <p>
+ * The errors of all the invalid types are collected into one {@link SheetsmithConfigurationException}, which stops
+ * the application: mistakes in sheet classes surface at startup instead of at the first generation.
  *
  * @see SheetsmithProperties.Validation
  * @since 1.0.0
@@ -76,9 +82,15 @@ public class SheetsmithStartupValidator implements SmartInitializingSingleton {
 
     private List<Class<?>> annotatedClasses() {
         ClassPathScanningCandidateComponentProvider scanner =
-                new ClassPathScanningCandidateComponentProvider(false, environment);
+                new ClassPathScanningCandidateComponentProvider(false, environment) {
+                    /** Every type found by the filter, abstract and nested ones included, except annotations. */
+                    @Override
+                    protected boolean isCandidateComponent(AnnotatedBeanDefinition beanDefinition) {
+                        return !beanDefinition.getMetadata().isAnnotation();
+                    }
+                };
         scanner.setResourceLoader(resourceLoader);
-        scanner.addIncludeFilter(new AnnotationTypeFilter(ExcelSheet.class));
+        scanner.addIncludeFilter(new AnnotationTypeFilter(ExcelSheet.class, false));
         TreeSet<String> names = new TreeSet<>();
         for (String basePackage : packages) {
             for (BeanDefinition candidate : scanner.findCandidateComponents(basePackage)) {

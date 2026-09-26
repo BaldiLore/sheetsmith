@@ -20,8 +20,10 @@ import java.lang.annotation.Target;
  * <p>
  * Declare named styles on the sheet class, or on a style sheet class annotated with {@link ExcelStyleSheet} to
  * share them between sheet classes. The annotation is repeatable. Style names must not be blank (rule V-16) and
- * must be unique among the styles declared on one class (rule V-07). A style declared on the sheet class replaces
- * a style with the same name coming from a style sheet. Named styles are not inherited from superclasses.
+ * must be unique within one declaring class, whether the sheet class or a style sheet (rule V-07); two style sheets
+ * referenced by the same sheet class must not declare the same name (rule V-08). A style declared on the sheet
+ * class replaces a style with the same name coming from a style sheet. Named styles are not inherited from
+ * superclasses.
  * <p>
  * A style takes effect through the slots that reference it: {@link ExcelSheet#titleStyle()},
  * {@link ExcelSheet#header()}, {@link ExcelSheet#body()}, {@link ExcelColumn#headerStyle()} and
@@ -102,7 +104,8 @@ public @interface ExcelStyle {
     /**
      * Name of the style, used by slots to reference it.
      * <p>
-     * Must not be blank (rule V-16) and must be unique among the styles declared on one class (rule V-07).
+     * Must not be blank (rule V-16) and must be unique within the declaring class, whether the sheet class or a
+     * style sheet (rule V-07).
      *
      * @return the style name
      */

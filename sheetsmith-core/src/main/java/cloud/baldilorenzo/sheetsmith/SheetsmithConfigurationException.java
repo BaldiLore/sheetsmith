@@ -43,10 +43,11 @@ import java.util.stream.Collectors;
  *     <tr><th scope="row">V-06</th><td>Every referenced style name exists: slots, {@code titleStyle},
  *         {@code headerStyle} and column slots.</td>
  *         <td>Declare the style, reference the style sheet that declares it, or fix the name.</td></tr>
- *     <tr><th scope="row">V-07</th><td>Style names are unique among the styles declared on one class.</td>
+ *     <tr><th scope="row">V-07</th><td>Style names are unique within one declaring class: among the styles
+ *         declared on the sheet class, and among the styles declared on each style sheet.</td>
  *         <td>Rename or merge the duplicates.</td></tr>
  *     <tr><th scope="row">V-08</th><td>The style sheets referenced by one class do not define the same style
- *         name.</td><td>Rename the style in one style sheet, or redefine it on the class.</td></tr>
+ *         name: a conflict between two style sheets, not within one.</td><td>Rename the style in one style sheet, or redefine it on the class.</td></tr>
  *     <tr><th scope="row">V-09</th><td>Every class listed in {@code styleSheets} is annotated with
  *         {@link cloud.baldilorenzo.sheetsmith.annotation.ExcelStyleSheet}.</td>
  *         <td>Annotate the style sheet class.</td></tr>
@@ -88,7 +89,9 @@ public final class SheetsmithConfigurationException extends SheetsmithException 
 
     private static final long serialVersionUID = 1L;
 
-    private final transient List<ConfigurationError> errors;
+    /** The errors: always an immutable, serialisable list created with {@code List.copyOf}. */
+    @SuppressWarnings("serial")
+    private final List<ConfigurationError> errors;
 
     /**
      * Creates an exception reporting the given errors. The message lists them one per line.

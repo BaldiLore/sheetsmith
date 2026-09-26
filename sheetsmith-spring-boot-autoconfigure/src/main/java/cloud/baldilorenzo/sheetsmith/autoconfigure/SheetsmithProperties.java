@@ -92,9 +92,10 @@ public record SheetsmithProperties(
     /**
      * Startup validation of sheet classes.
      *
-     * @param packages Packages scanned at startup, subpackages included, for classes annotated with @ExcelSheet.
-     *                 Every class found is validated, and any error stops the application with one exception
-     *                 listing all of them. Default empty, which disables the validation.
+     * @param packages Packages scanned at startup, subpackages included. Every type annotated directly with the
+     *                 annotation @ExcelSheet is validated, abstract and nested classes included; annotation types
+     *                 and types only meta-annotated with @ExcelSheet are not. Any error stops the application with
+     *                 one exception listing all of them. Default empty, which disables the validation.
      * @since 1.0.0
      */
     public record Validation(@DefaultValue List<String> packages) {

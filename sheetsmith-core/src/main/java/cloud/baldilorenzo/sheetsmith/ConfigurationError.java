@@ -1,5 +1,6 @@
 package cloud.baldilorenzo.sheetsmith;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -16,8 +17,10 @@ import java.util.Objects;
  * @param message the description of the error
  * @see SheetsmithConfigurationException
  * @since 1.0.0
+ * @serial exclude
  */
-public record ConfigurationError(String code, Class<?> type, String element, String message) {
+public record ConfigurationError(String code, Class<?> type, String element, String message)
+        implements Serializable {
 
     /**
      * Creates a configuration error.

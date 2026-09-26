@@ -57,6 +57,10 @@ public interface Sheetsmith {
      * @throws SheetsmithConfigurationException if the input violates rules V-18 to V-20 or a sheet class violates
      *                                          any of rules V-01 to V-17; every error found is listed
      * @throws SheetsmithGenerationException    if an element or a value of the data cannot be written
+     * @throws java.io.UncheckedIOException     if serialising the workbook fails. It is an infrastructure error, not
+     *                                          a configuration or data error, so it is not wrapped in a
+     *                                          {@link SheetsmithException}; with this method, which writes to
+     *                                          memory, it is practically unreachable
      * @throws NullPointerException             if {@code sheets} is null or contains a null element
      * @see SheetsmithConfigurationException
      * @see cloud.baldilorenzo.sheetsmith.convert.CellValue

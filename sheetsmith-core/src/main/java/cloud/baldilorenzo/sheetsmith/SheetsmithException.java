@@ -13,6 +13,9 @@ package cloud.baldilorenzo.sheetsmith;
  *       element or a failing converter. It usually means unexpected data at runtime, and it names the sheet, the
  *       row and the field involved.</li>
  * </ul>
+ * A failure while the workbook is serialised is neither: it is an infrastructure error, reported as a
+ * {@link java.io.UncheckedIOException} and not wrapped in a sheetsmith exception, so that callers can handle it
+ * apart from configuration and data errors.
  *
  * @since 1.0.0
  */

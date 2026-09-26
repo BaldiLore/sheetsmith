@@ -21,10 +21,10 @@ import java.lang.annotation.Target;
  * The value of a column is read:
  * <ol>
  *   <li>for a record, through the component accessor;</li>
- *   <li>for a class, through a public no-argument getter, {@code getX()}, or {@code isX()} for {@code boolean} and
- *       {@code Boolean} fields, declared on the class or inherited, whose return type is assignable to the field
- *       type;</li>
- *   <li>otherwise, directly from the field, even when it is private.</li>
+ *   <li>for a class, through a public no-argument getter, declared on the class or inherited, whose return type is
+ *       assignable to the field type: for {@code boolean} and {@code Boolean} fields, {@code isX()} is tried first
+ *       and then {@code getX()}; for fields of any other type, {@code getX()};</li>
+ *   <li>when no suitable public getter exists, directly from the field, even when it is private.</li>
  * </ol>
  * In a modular application, sheetsmith needs reflective access to the packages that contain the sheet classes: open
  * them to the library, for example with {@code opens com.example.export to cloud.baldilorenzo.sheetsmith;} in
