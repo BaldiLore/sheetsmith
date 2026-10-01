@@ -54,9 +54,9 @@ import java.util.Objects;
  *     <tr><th scope="row">Very large exports</th>
  *         <td>The whole workbook is built in memory, so memory grows with the number of cells; automatic column
  *         sizing also takes longer as the number of rows grows</td>
- *         <td>Measure with realistic volumes; for large sheets, disable automatic sizing and set explicit widths;
- *         prefer {@link cloud.baldilorenzo.sheetsmith.Sheetsmith#generate(java.util.List, java.io.OutputStream)}
- *         to avoid an extra copy of the file</td></tr>
+ *         <td>Measure with realistic volumes and size the heap accordingly; for large sheets, disable automatic
+ *         sizing and set explicit widths. Writing to a stream instead of returning a {@code byte[]} does not
+ *         reduce memory significantly, because the workbook, not the file, takes most of it</td></tr>
  *   </tbody>
  * </table>
  *

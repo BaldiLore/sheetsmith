@@ -22,10 +22,13 @@ import java.util.List;
  * own workbook, so concurrent calls do not interfere.
  * <p>
  * The file is either returned as a {@code byte[]}, with {@link #generate(List)}, or written to a stream supplied by
- * the caller, with {@link #generate(List, OutputStream)}. The two produce the same content. The whole workbook is
- * built in memory before it is written, so memory grows with the number of cells; the stream method avoids holding
- * a second copy of the file as a {@code byte[]}, and is preferable for large files. The known limits of very large
- * exports are described in {@link cloud.baldilorenzo.sheetsmith.convert.CellValue}.
+ * the caller, with {@link #generate(List, OutputStream)}. The two produce the same content and use practically the
+ * same memory: the whole workbook is built in memory before it is written, so memory grows with the number of
+ * cells, and its in-memory model is far larger than the file, which makes the extra copy of the file held by the
+ * {@code byte[]} method negligible. Choose the method by where the file goes: the stream method when it goes to a
+ * file, an HTTP response or another stream, the {@code byte[]} method when the bytes themselves are needed, for
+ * example to attach them to a message or store them in a database. The known limits of very large exports are
+ * described in {@link cloud.baldilorenzo.sheetsmith.convert.CellValue}.
  *
  * <pre>{@code
  * // Created once, for example in a static field or as a singleton, and reused
