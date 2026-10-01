@@ -31,7 +31,8 @@ import java.util.Map;
  * <ul>
  *   <li>a {@link Sheetsmith} bean, unless the application defines its own bean of that type, in which case this
  *       one backs off and the application bean is used as it is. The auto-configured bean is built with the
- *       defaults bound from {@link SheetsmithProperties}, a {@link SpringConverterFactory} for field converters,
+ *       defaults and the document properties bound from {@link SheetsmithProperties}, a
+ *       {@link SpringConverterFactory} for field converters,
  *       and every {@link CellConverter} bean of the context as an application converter;</li>
  *   <li>a {@link SheetsmithStartupValidator}, only when {@code sheetsmith.validation.packages} is not empty.</li>
  * </ul>
@@ -82,8 +83,9 @@ public class SheetsmithAutoConfiguration {
     /**
      * Creates the {@link Sheetsmith} bean, unless the application defines one.
      * <p>
-     * The bean uses the defaults of {@link SheetsmithProperties#toDefaults()}, a {@link SpringConverterFactory}, and
-     * every {@link CellConverter} bean registered for its generic type.
+     * The bean uses the defaults of {@link SheetsmithProperties#toDefaults()}, the document properties of
+     * {@link SheetsmithProperties#toDocumentProperties()}, a {@link SpringConverterFactory}, and every
+     * {@link CellConverter} bean registered for its generic type.
      *
      * @param properties  the sheetsmith properties
      * @param beanFactory the bean factory, to find converter beans and create field converters
@@ -98,6 +100,7 @@ public class SheetsmithAutoConfiguration {
     public Sheetsmith sheetsmith(SheetsmithProperties properties, ConfigurableListableBeanFactory beanFactory) {
         Sheetsmith.Builder builder = Sheetsmith.builder()
                 .defaults(properties.toDefaults())
+                .documentProperties(properties.toDocumentProperties())
                 .converterFactory(new SpringConverterFactory(beanFactory));
         registerConverterBeans(builder, beanFactory);
         return builder.build();

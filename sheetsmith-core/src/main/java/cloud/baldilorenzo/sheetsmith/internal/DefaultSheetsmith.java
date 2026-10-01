@@ -1,6 +1,7 @@
 package cloud.baldilorenzo.sheetsmith.internal;
 
 import cloud.baldilorenzo.sheetsmith.ConfigurationError;
+import cloud.baldilorenzo.sheetsmith.DocumentProperties;
 import cloud.baldilorenzo.sheetsmith.SheetData;
 import cloud.baldilorenzo.sheetsmith.Sheetsmith;
 import cloud.baldilorenzo.sheetsmith.SheetsmithConfigurationException;
@@ -54,7 +55,7 @@ public final class DefaultSheetsmith implements Sheetsmith {
 
     private DefaultSheetsmith(Builder builder) {
         this.binder = new ConverterBinder(new ConverterRegistry(builder.converters), builder.factory);
-        this.writer = new WorkbookWriter(WorkbookSupplier.XSSF, builder.defaults);
+        this.writer = new WorkbookWriter(WorkbookSupplier.xssf(builder.documentProperties), builder.defaults);
     }
 
     @Override
@@ -227,6 +228,7 @@ public final class DefaultSheetsmith implements Sheetsmith {
         private final Map<Class<?>, CellConverter<?>> converters = new LinkedHashMap<>();
         private CellConverterFactory factory = new ReflectiveConverterFactory();
         private SheetsmithDefaults defaults = SheetsmithDefaults.standard();
+        private DocumentProperties documentProperties = DocumentProperties.standard();
 
         /**
          * Creates a builder with default settings.
@@ -254,6 +256,12 @@ public final class DefaultSheetsmith implements Sheetsmith {
         @Override
         public Builder defaults(SheetsmithDefaults defaults) {
             this.defaults = Objects.requireNonNull(defaults, "defaults");
+            return this;
+        }
+
+        @Override
+        public Builder documentProperties(DocumentProperties properties) {
+            this.documentProperties = Objects.requireNonNull(properties, "properties");
             return this;
         }
 

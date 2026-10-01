@@ -135,7 +135,7 @@ public interface Sheetsmith {
      * <p>
      * Unless configured otherwise, the built instance has no application converters, so only the built-in
      * converters apply; creates field converters through their public no-argument constructor; and uses
-     * {@link SheetsmithDefaults#standard()}.
+     * {@link SheetsmithDefaults#standard()} and {@link DocumentProperties#standard()}.
      *
      * @return a new builder
      */
@@ -213,6 +213,17 @@ public interface Sheetsmith {
          * @see SheetsmithDefaults
          */
         Builder defaults(SheetsmithDefaults defaults);
+
+        /**
+         * Sets the properties recorded in every generated file: the author and the application. Without this
+         * call, {@link DocumentProperties#standard()} is used, and both are {@code sheetsmith}.
+         *
+         * @param properties the document properties, not null
+         * @return this builder
+         * @throws NullPointerException if {@code properties} is null
+         * @see DocumentProperties
+         */
+        Builder documentProperties(DocumentProperties properties);
 
         /**
          * Builds an instance with the current settings.

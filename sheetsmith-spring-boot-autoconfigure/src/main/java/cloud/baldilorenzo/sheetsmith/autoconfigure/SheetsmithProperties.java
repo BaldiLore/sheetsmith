@@ -1,5 +1,6 @@
 package cloud.baldilorenzo.sheetsmith.autoconfigure;
 
+import cloud.baldilorenzo.sheetsmith.DocumentProperties;
 import cloud.baldilorenzo.sheetsmith.SheetsmithDefaults;
 import cloud.baldilorenzo.sheetsmith.style.TablePreset;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -25,6 +26,9 @@ import java.util.List;
  *     number: "#,##0.00"
  *   preset: LIGHT
  *   accent-color: "#1F4E79"
+ *   document:
+ *     author: Example Ltd
+ *     application: Billing
  *   validation:
  *     packages:
  *       - com.example.export
@@ -37,6 +41,7 @@ import java.util.List;
  * @param accentColor Accent colour of the preset of the sheet classes that declare no accent colour, as #RRGGBB or
  *                    the name of an Apache POI IndexedColors constant. Default #4472C4. In YAML, quote the value,
  *                    because # starts a comment. An invalid colour stops the application at startup.
+ * @param document    Properties recorded in every generated file: author and application.
  * @param validation  Startup validation of sheet classes.
  * @see SheetsmithAutoConfiguration
  * @since 1.0.0
@@ -46,6 +51,7 @@ public record SheetsmithProperties(
         @DefaultValue Formats formats,
         @DefaultValue("NONE") TablePreset preset,
         @DefaultValue("#4472C4") String accentColor,
+        @DefaultValue Document document,
         @DefaultValue Validation validation) {
 
     /**
@@ -57,6 +63,15 @@ public record SheetsmithProperties(
      */
     public SheetsmithDefaults toDefaults() {
         return new SheetsmithDefaults(formats.date(), formats.dateTime(), formats.number(), preset, accentColor);
+    }
+
+    /**
+     * Returns the document properties described by these properties.
+     *
+     * @return the document properties
+     */
+    public DocumentProperties toDocumentProperties() {
+        return new DocumentProperties(document.author(), document.application());
     }
 
     /**
@@ -86,6 +101,31 @@ public record SheetsmithProperties(
          */
         public Formats {
             number = number == null ? "" : number;
+        }
+    }
+
+    /**
+     * Properties recorded in every generated file.
+     *
+     * @param author      Author of the generated files, shown by Excel in File, Info. Default sheetsmith. An empty
+     *                    value leaves the author out of the file.
+     * @param application Application recorded as the creator of the generated files. Default sheetsmith. An empty
+     *                    value leaves it out of the file.
+     * @since 1.0.0
+     */
+    public record Document(
+            @DefaultValue("sheetsmith") String author,
+            @DefaultValue("sheetsmith") String application) {
+
+        /**
+         * Creates the document properties; a missing value means an empty one.
+         *
+         * @param author      the author, or null for none
+         * @param application the application, or null for none
+         */
+        public Document {
+            author = author == null ? "" : author;
+            application = application == null ? "" : application;
         }
     }
 
