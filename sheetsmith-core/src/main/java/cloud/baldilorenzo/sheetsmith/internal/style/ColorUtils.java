@@ -53,14 +53,18 @@ public final class ColorUtils {
     }
 
     /**
-     * Returns the text colour readable on a background: white when the relative luminance of the background is
-     * below 0.5, black otherwise.
+     * Returns the text colour readable on a background: white or black, whichever has the higher WCAG contrast
+     * ratio with the background. The two ratios are equal at a relative luminance of about 0.18, so mid-tone
+     * backgrounds get black text.
      *
      * @param color the background colour
      * @return {@code #FFFFFF} or {@code #000000}
      */
     public static String contrast(String color) {
-        return luminance(color) < 0.5 ? "#FFFFFF" : "#000000";
+        double luminance = luminance(color);
+        double onWhite = (1.0 + 0.05) / (luminance + 0.05);
+        double onBlack = (luminance + 0.05) / (0.0 + 0.05);
+        return onWhite >= onBlack ? "#FFFFFF" : "#000000";
     }
 
     /**

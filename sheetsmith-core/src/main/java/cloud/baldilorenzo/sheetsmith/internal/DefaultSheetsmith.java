@@ -24,13 +24,11 @@ import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -132,7 +130,7 @@ public final class DefaultSheetsmith implements Sheetsmith {
         if (sheets.isEmpty()) {
             errors.add(new ConfigurationError("V-18", null, "", "the sheet list is empty"));
         }
-        Set<String> names = new HashSet<>();
+        Map<String, Integer> names = new HashMap<>();
         for (int i = 0; i < sheets.size(); i++) {
             SheetData<?> sheet = Objects.requireNonNull(sheets.get(i), "sheets must not contain null elements");
             String name = sheet.name();
@@ -141,9 +139,11 @@ public final class DefaultSheetsmith implements Sheetsmith {
             if (problem != null) {
                 errors.add(new ConfigurationError("V-19", null, element, "sheet name '" + name + "' " + problem));
             }
-            if (!names.add(name.toLowerCase(Locale.ROOT))) {
-                errors.add(new ConfigurationError("V-20", null, element,
-                        "sheet name '" + name + "' is already used, ignoring case"));
+            Integer first = names.putIfAbsent(name.toLowerCase(Locale.ROOT), i);
+            if (first != null) {
+                errors.add(new ConfigurationError("V-20", null, element, "sheet name '" + name
+                        + "' is already used by sheets[" + first + "] '" + sheets.get(first).name()
+                        + "', ignoring case"));
             }
         }
         return errors;
@@ -151,7 +151,7 @@ public final class DefaultSheetsmith implements Sheetsmith {
 
     private static String sheetNameProblem(String name) {
         if (name.isEmpty() || name.length() > MAX_SHEET_NAME_LENGTH) {
-            return "must be 1 to " + MAX_SHEET_NAME_LENGTH + " characters long";
+            return "must be 1 to " + MAX_SHEET_NAME_LENGTH + " characters long (it has " + name.length() + ")";
         }
         if (FORBIDDEN_SHEET_NAME_CHARS.matcher(name).find()) {
             return "must not contain any of \\ / ? * [ ] :";

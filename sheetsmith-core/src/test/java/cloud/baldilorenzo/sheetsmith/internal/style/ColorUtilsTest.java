@@ -56,13 +56,13 @@ class ColorUtilsTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"#4472C4", "#000000", "#223962", "DARK_RED", "#7F7F7F"})
+    @ValueSource(strings = {"#4472C4", "#000000", "#223962", "DARK_RED", "#595959", "#80734D"})
     void contrastOnDarkColoursIsWhite(String color) {
         assertThat(ColorUtils.contrast(color)).isEqualTo("#FFFFFF");
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"#FFFFFF", "#FFC000", "#E3EAF6", "YELLOW", "#BFBFBF"})
+    @ValueSource(strings = {"#FFFFFF", "#FFC000", "#E3EAF6", "YELLOW", "#BFBFBF", "#7F7F7F", "#BFAD73", "#70AD47"})
     void contrastOnLightColoursIsBlack(String color) {
         assertThat(ColorUtils.contrast(color)).isEqualTo("#000000");
     }
