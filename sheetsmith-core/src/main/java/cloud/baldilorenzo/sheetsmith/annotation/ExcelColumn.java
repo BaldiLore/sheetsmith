@@ -26,11 +26,13 @@ import java.lang.annotation.Target;
  *       and then {@code getX()}; for fields of any other type, {@code getX()};</li>
  *   <li>when no suitable public getter exists, directly from the field, even when it is private.</li>
  * </ol>
- * In a modular application, sheetsmith needs reflective access to the packages that contain the sheet classes: open
- * them to the library, for example with {@code opens com.example.export to cloud.baldilorenzo.sheetsmith;} in
- * {@code module-info.java}. A value that cannot be accessed violates rule V-17, whose message names the package to
- * open. A getter that throws while a sheet is generated causes a
- * {@link cloud.baldilorenzo.sheetsmith.SheetsmithGenerationException}.
+ * In a modular application, sheetsmith needs reflective access to the packages that contain the sheet classes, so
+ * open them in {@code module-info.java}. An unqualified {@code opens com.example.export;} works in every setup. A
+ * qualified {@code opens com.example.export to cloud.baldilorenzo.sheetsmith;} works only when sheetsmith is on the
+ * module path, where its module name is {@code cloud.baldilorenzo.sheetsmith}; when sheetsmith is on the class path,
+ * it belongs to the unnamed module and the qualified directive does not reach it. A value that cannot be accessed
+ * violates rule V-17, whose message names the package to open. A getter that throws while a sheet is generated
+ * causes a {@link cloud.baldilorenzo.sheetsmith.SheetsmithGenerationException}.
  *
  * <pre>
  * &#64;ExcelSheet

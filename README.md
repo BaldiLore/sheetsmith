@@ -2,7 +2,7 @@
 
 Annotation-driven Excel generation for Spring Boot, built on Apache POI.
 
-Describe a table once with annotations, pass a list of objects, get an `.xlsx` file as `byte[]`: title, header, rows, styles, presets and formats included.
+Describe a table once with annotations, pass a list of objects, get an `.xlsx` file as a `byte[]` or written to an `OutputStream`: title, header, rows, styles, presets and formats included.
 
 ## Quick start
 
@@ -34,10 +34,6 @@ byte[] file = sheetsmith.generate(List.of(SheetData.of("Customers", CustomerRow.
 ```
 
 Without Spring, depend on `sheetsmith-core` and create the generator with `Sheetsmith.builder().build()`.
-
-## Documentation
-
-The [User Guide](docs/user-guide.md) documents every option and contains a cookbook of complete use cases.
 
 ## Modules
 

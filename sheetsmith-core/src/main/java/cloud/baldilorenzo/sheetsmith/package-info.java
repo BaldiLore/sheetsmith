@@ -9,6 +9,8 @@
  *       data;</li>
  *   <li>{@link cloud.baldilorenzo.sheetsmith.SheetsmithDefaults}: the application defaults, and the reference of
  *       the Excel format syntax;</li>
+ *   <li>{@link cloud.baldilorenzo.sheetsmith.DocumentProperties}: the author and the application recorded in every
+ *       generated file;</li>
  *   <li>{@link cloud.baldilorenzo.sheetsmith.SheetsmithException} and its two kinds,
  *       {@link cloud.baldilorenzo.sheetsmith.SheetsmithConfigurationException}, which lists the validation rules,
  *       and {@link cloud.baldilorenzo.sheetsmith.SheetsmithGenerationException}.</li>

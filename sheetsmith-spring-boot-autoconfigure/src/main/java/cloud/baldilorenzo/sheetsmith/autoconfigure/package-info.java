@@ -8,7 +8,7 @@
  *       {@code Sheetsmith} bean, backs off when the application defines its own, and registers every converter bean
  *       as an application converter;</li>
  *   <li>{@link cloud.baldilorenzo.sheetsmith.autoconfigure.SheetsmithProperties}: the {@code sheetsmith.*}
- *       properties, for default formats, preset, accent colour and startup validation;</li>
+ *       properties, for default formats, preset, accent colour, document properties and startup validation;</li>
  *   <li>{@link cloud.baldilorenzo.sheetsmith.autoconfigure.SpringConverterFactory}: creates field converters from
  *       the application context;</li>
  *   <li>{@link cloud.baldilorenzo.sheetsmith.autoconfigure.SheetsmithStartupValidator}: validates the sheet
