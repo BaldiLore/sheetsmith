@@ -1,21 +1,29 @@
 # sheetsmith
 
-Framework-agnostic core of sheetsmith: annotation-driven Excel (.xlsx) generation from Java POJOs and records with Apache POI.
+[![Maven Central](https://img.shields.io/maven-central/v/cloud.baldilorenzo.sheetsmith/sheetsmith-core)](https://central.sonatype.com/artifact/cloud.baldilorenzo.sheetsmith/sheetsmith-core)
 
-https://sheetsmith.baldilorenzo.cloud/
+Annotation-driven Excel (.xlsx) generation from Java POJOs and records, built on Apache POI, with Spring Boot auto-configuration.
+
+Documentation: [sheetsmith.baldilorenzo.cloud](https://sheetsmith.baldilorenzo.cloud)
 
 Describe a table once with annotations, pass a list of objects, get an `.xlsx` file as a `byte[]` or written to an `OutputStream`: title, header, rows, styles, presets and formats included.
 
 ## Quick start
 
-Add the starter:
+Add the starter with Maven:
 
 ```xml
 <dependency>
     <groupId>cloud.baldilorenzo.sheetsmith</groupId>
     <artifactId>sheetsmith-spring-boot-starter</artifactId>
-    <version>${sheetsmith.version}</version>
+    <version>1.0.0</version>
 </dependency>
+```
+
+or with Gradle:
+
+```kotlin
+implementation("cloud.baldilorenzo.sheetsmith:sheetsmith-spring-boot-starter:1.0.0")
 ```
 
 Describe the sheet:
