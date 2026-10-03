@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>cloud.baldilorenzo</groupId>
+        <groupId>cloud.baldilorenzo.sheetsmith</groupId>
         <artifactId>sheetsmith-parent</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>

@@ -10,7 +10,7 @@ Add the starter:
 
 ```xml
 <dependency>
-    <groupId>cloud.baldilorenzo</groupId>
+    <groupId>cloud.baldilorenzo.sheetsmith</groupId>
     <artifactId>sheetsmith-spring-boot-starter</artifactId>
     <version>${sheetsmith.version}</version>
 </dependency>
