@@ -1,17 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+    child.*.inherit.append.path="false": the modules inherit <url> and <scm> exactly as declared here.
+    Without it, Maven appends each module's artifactId, publishing broken links such as
+    https://sheetsmith.baldilorenzo.cloud/sheetsmith-core.
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
+         child.project.url.inherit.append.path="false">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>cloud.baldilorenzo</groupId>
+    <groupId>cloud.baldilorenzo.sheetsmith</groupId>
     <artifactId>sheetsmith-parent</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <packaging>pom</packaging>
 
     <name>sheetsmith</name>
-    <description>Annotation-driven Excel generation for Spring Boot, built on Apache POI.</description>
-    <url>https://github.com/BaldiLore/sheetsmith</url>
+    <description>Annotation-driven Excel (.xlsx) generation from Java POJOs and records, built on Apache POI, with Spring Boot auto-configuration.</description>
+    <url>https://sheetsmith.baldilorenzo.cloud</url>
     <inceptionYear>2026</inceptionYear>
 
     <licenses>
@@ -31,7 +37,9 @@
         </developer>
     </developers>
 
-    <scm>
+    <scm child.scm.connection.inherit.append.path="false"
+         child.scm.developerConnection.inherit.append.path="false"
+         child.scm.url.inherit.append.path="false">
         <url>https://github.com/BaldiLore/sheetsmith</url>
         <connection>scm:git:https://github.com/BaldiLore/sheetsmith.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/BaldiLore/sheetsmith.git</developerConnection>
@@ -75,12 +83,12 @@
         <dependencies>
             <!-- Internal modules -->
             <dependency>
-                <groupId>cloud.baldilorenzo</groupId>
+                <groupId>cloud.baldilorenzo.sheetsmith</groupId>
                 <artifactId>sheetsmith-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>cloud.baldilorenzo</groupId>
+                <groupId>cloud.baldilorenzo.sheetsmith</groupId>
                 <artifactId>sheetsmith-spring-boot-autoconfigure</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -143,7 +151,19 @@
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>${maven-javadoc-plugin.version}</version>
                     <configuration>
-                        <doclint>all,-missing</doclint>
+                        <release>${java.release}</release>
+                        <!-- Every check, missing comments included: the published Javadoc must stay complete -->
+                        <doclint>all</doclint>
+                        <failOnWarnings>true</failOnWarnings>
+                        <!--
+                            Internal packages are not part of the API and are not published. The wildcard matches
+                            only the subpackages, so the internal package itself is listed too.
+                        -->
+                        <excludePackageNames>cloud.baldilorenzo.sheetsmith.internal:cloud.baldilorenzo.sheetsmith.internal*</excludePackageNames>
+                        <overview>${project.basedir}/src/main/javadoc/overview.html</overview>
+                        <doctitle>${project.name} ${project.version} API</doctitle>
+                        <windowtitle>${project.name} ${project.version} API</windowtitle>
+                        <bottom>Copyright &#169; 2026 Lorenzo Baldi. Licensed under the Apache License 2.0.</bottom>
                     </configuration>
                 </plugin>
                 <plugin>
