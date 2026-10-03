@@ -10,8 +10,8 @@
     <packaging>pom</packaging>
 
     <name>sheetsmith</name>
-    <description>Annotation-driven Excel generation for Spring Boot, built on Apache POI.</description>
-    <url>https://github.com/BaldiLore/sheetsmith</url>
+    <description>Annotation-driven Excel (.xlsx) generation from Java POJOs and records, built on Apache POI, with Spring Boot auto-configuration.</description>
+    <url>https://sheetsmith.baldilorenzo.cloud</url>
     <inceptionYear>2026</inceptionYear>
 
     <licenses>

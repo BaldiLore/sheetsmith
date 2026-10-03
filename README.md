@@ -1,6 +1,8 @@
 # sheetsmith
 
-Annotation-driven Excel generation for Spring Boot, built on Apache POI.
+Framework-agnostic core of sheetsmith: annotation-driven Excel (.xlsx) generation from Java POJOs and records with Apache POI.
+
+https://sheetsmith.baldilorenzo.cloud/
 
 Describe a table once with annotations, pass a list of objects, get an `.xlsx` file as a `byte[]` or written to an `OutputStream`: title, header, rows, styles, presets and formats included.
 

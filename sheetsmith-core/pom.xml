@@ -12,7 +12,7 @@
 
     <artifactId>sheetsmith-core</artifactId>
     <name>sheetsmith core</name>
-    <description>Framework-agnostic core of sheetsmith: annotations, metadata extraction, style resolution and workbook writing.</description>
+    <description>Framework-agnostic core of sheetsmith: annotation-driven Excel (.xlsx) generation from Java POJOs and records with Apache POI.</description>
 
     <dependencies>
         <dependency>
