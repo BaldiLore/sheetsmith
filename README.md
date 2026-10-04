@@ -1,6 +1,10 @@
 # sheetsmith
 
-[![Maven Central](https://img.shields.io/maven-central/v/cloud.baldilorenzo.sheetsmith/sheetsmith-core)](https://central.sonatype.com/artifact/cloud.baldilorenzo.sheetsmith/sheetsmith-core)
+[![JDK 17](https://github.com/BaldiLore/sheetsmith/actions/workflows/build-jdk17.yml/badge.svg?branch=master)](https://github.com/BaldiLore/sheetsmith/actions/workflows/build-jdk17.yml)
+[![JDK 21](https://github.com/BaldiLore/sheetsmith/actions/workflows/build-jdk21.yml/badge.svg?branch=master)](https://github.com/BaldiLore/sheetsmith/actions/workflows/build-jdk21.yml)
+[![JDK 25](https://github.com/BaldiLore/sheetsmith/actions/workflows/build-jdk25.yml/badge.svg?branch=master)](https://github.com/BaldiLore/sheetsmith/actions/workflows/build-jdk25.yml)
+[![Maven Central](https://img.shields.io/maven-central/v/cloud.baldilorenzo.sheetsmith/sheetsmith-spring-boot-starter)](https://central.sonatype.com/artifact/cloud.baldilorenzo.sheetsmith/sheetsmith-spring-boot-starter)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue)](https://www.apache.org/licenses/LICENSE-2.0)
 
 Annotation-driven Excel (.xlsx) generation from Java POJOs and records, built on Apache POI, with Spring Boot auto-configuration.
 
@@ -55,7 +59,7 @@ Without Spring, depend on `sheetsmith-core` and create the generator with `Sheet
 
 ## Requirements
 
-- Java 17 or later
+- Java 17 or later (built and tested on Java 17, 21 and 25)
 - Spring Boot 4, for the Spring Boot integration only
 
 ## Building

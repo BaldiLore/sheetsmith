@@ -1,0 +1,45 @@
+name: Build (reusable)
+
+# Shared build logic, invoked by one caller workflow per JDK
+# (build-jdk17.yml, build-jdk21.yml, build-jdk25.yml).
+# It has no push or pull_request trigger on purpose: it only runs when called.
+on:
+  workflow_call:
+    inputs:
+      java-version:
+        description: JDK version to build and test with
+        required: true
+        type: string
+
+# Read-only token: this workflow never writes to the repository.
+# A called workflow cannot widen the permissions granted by its caller.
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build (JDK ${{ inputs.java-version }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          # The token is not needed after checkout: do not keep it in .git/config.
+          persist-credentials: false
+
+      - name: Set up JDK ${{ inputs.java-version }}
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: ${{ inputs.java-version }}
+          # The cache key does not depend on the JDK, so the three builds
+          # share the same Maven dependencies.
+          cache: maven
+
+      # Plain build without the release profile: no signing, no secrets.
+      # Invoked through sh so the wrapper works even if the executable bit
+      # was lost when committing from Windows.
+      - name: Build and test
+        run: sh ./mvnw --batch-mode --no-transfer-progress verify
