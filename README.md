@@ -1,5 +1,9 @@
 # sheetsmith
 
+<p align="center">
+  <img src="docs/sheetsmith-banner.png" alt="sheetsmith: an annotated Java record turned into a styled Excel sheet" width="100%">
+</p>
+
 [![JDK 17](https://github.com/BaldiLore/sheetsmith/actions/workflows/build-jdk17.yml/badge.svg?branch=master)](https://github.com/BaldiLore/sheetsmith/actions/workflows/build-jdk17.yml)
 [![JDK 21](https://github.com/BaldiLore/sheetsmith/actions/workflows/build-jdk21.yml/badge.svg?branch=master)](https://github.com/BaldiLore/sheetsmith/actions/workflows/build-jdk21.yml)
 [![JDK 25](https://github.com/BaldiLore/sheetsmith/actions/workflows/build-jdk25.yml/badge.svg?branch=master)](https://github.com/BaldiLore/sheetsmith/actions/workflows/build-jdk25.yml)
