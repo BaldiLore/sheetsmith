@@ -1,0 +1,56 @@
+name: Bug report
+description: Something does not work as documented
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug.
+        For questions on how to use sheetsmith, please open a discussion instead.
+
+  - type: input
+    id: version
+    attributes:
+      label: sheetsmith version
+      placeholder: "1.0.0"
+    validations:
+      required: true
+
+  - type: input
+    id: java
+    attributes:
+      label: Java version
+      placeholder: "21"
+    validations:
+      required: true
+
+  - type: input
+    id: spring-boot
+    attributes:
+      label: Spring Boot version
+      description: Leave empty if you use sheetsmith-core without Spring.
+      placeholder: "4.0.0"
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened
+      description: What you expected and what you got instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproducer
+    attributes:
+      label: How to reproduce
+      description: The sheet class and the call to generate, reduced to the minimum that shows the problem.
+      render: java
+    validations:
+      required: true
+
+  - type: textarea
+    id: log
+    attributes:
+      label: Error or log output
+      description: The full exception message, including the error code in square brackets if present.
+      render: shell

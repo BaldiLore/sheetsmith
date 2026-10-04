@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and help
+    url: https://github.com/BaldiLore/sheetsmith/discussions
+    about: Ask how to use sheetsmith or share how you use it.
+  - name: Documentation
+    url: https://sheetsmith.baldilorenzo.cloud
+    about: The user manual, with examples for every annotation.
