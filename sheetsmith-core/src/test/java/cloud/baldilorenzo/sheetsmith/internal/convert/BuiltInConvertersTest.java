@@ -159,6 +159,42 @@ class BuiltInConvertersTest {
         assertThat(names(BuiltInConverters.all())).containsAll(SQL_TYPES);
     }
 
+    /**
+     * Adding or removing a built-in converter changes which sheet classes are valid, so it is a compatibility
+     * decision: update this list, the Javadoc of {@code CellConverter} and the user manual together.
+     */
+    @Test
+    void theRegisteredTypesAreExactlyTheExpectedOnes() {
+        assertThat(names(BuiltInConverters.build(true))).containsExactlyInAnyOrder(
+                // text and numbers
+                "java.lang.CharSequence",
+                "java.lang.Character",
+                "java.lang.Number",
+                "java.lang.Boolean",
+                "java.lang.Enum",
+                // dates and times
+                "java.time.LocalDate",
+                "java.time.LocalDateTime",
+                "java.time.YearMonth",
+                "java.time.Year",
+                // identifiers and resources
+                "java.util.UUID",
+                "java.net.URI",
+                "java.net.URL",
+                "java.io.File",
+                "java.util.Currency",
+                "java.time.ZoneId",
+                "java.util.Locale",
+                // optional and atomic values
+                "java.util.OptionalInt",
+                "java.util.OptionalLong",
+                "java.util.OptionalDouble",
+                "java.util.concurrent.atomic.AtomicBoolean",
+                // java.sql types
+                "java.sql.Date",
+                "java.sql.Timestamp");
+    }
+
     @Test
     void convertersAreStateless() {
         assertThat(convert(UUID.class, new UUID(0, 1))).isEqualTo(new CellValue.Text(new UUID(0, 1).toString()));

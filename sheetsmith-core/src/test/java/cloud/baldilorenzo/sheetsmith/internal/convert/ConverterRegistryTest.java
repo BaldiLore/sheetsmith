@@ -209,4 +209,33 @@ class ConverterRegistryTest {
         assertThat(registry.find(UUID.class)).isSameAs(comparable);
         assertThat(registry.find(Year.class)).isSameAs(comparable);
     }
+
+    /**
+     * {@code java.sql.Date} and {@code Timestamp} extend {@code java.util.Date}: an application converter registered
+     * for {@code java.util.Date} is found through their superclass before the built-in converters are searched, so
+     * it replaces the built-in converters of both.
+     */
+    @Test
+    void applicationConverterForLegacyDateWinsOverTheSqlBuiltInOnes() {
+        CellConverter<Object> legacy = named("legacy");
+        ConverterRegistry registry = new ConverterRegistry(Map.of(Date.class, legacy));
+
+        assertThat(registry.find(Date.class)).isSameAs(legacy);
+        assertThat(registry.find(java.sql.Date.class)).isSameAs(legacy);
+        assertThat(registry.find(Timestamp.class)).isSameAs(legacy);
+    }
+
+    /**
+     * An application converter for the exact {@code java.sql} type is closer than one for {@code java.util.Date}:
+     * registering both keeps a dedicated conversion for that type and the legacy one for the others.
+     */
+    @Test
+    void applicationConverterForAnSqlTypeWinsOverOneForLegacyDate() {
+        CellConverter<Object> legacy = named("legacy");
+        CellConverter<Object> sqlDate = named("sqlDate");
+        ConverterRegistry registry = new ConverterRegistry(Map.of(Date.class, legacy, java.sql.Date.class, sqlDate));
+
+        assertThat(registry.find(java.sql.Date.class)).isSameAs(sqlDate);
+        assertThat(registry.find(Timestamp.class)).isSameAs(legacy);
+    }
 }

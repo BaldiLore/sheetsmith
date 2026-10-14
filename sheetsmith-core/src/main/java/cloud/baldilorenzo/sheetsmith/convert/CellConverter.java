@@ -65,8 +65,7 @@ package cloud.baldilorenzo.sheetsmith.convert;
  * holds for interfaces: an application converter registered for {@code Comparable} or {@code Serializable} also
  * applies to the columns of type {@code UUID} or {@code LocalDate}, which implement them. To keep the built-in
  * behaviour on such columns, declare a field converter, or register an application converter for the exact type.
- * When two
- * interfaces at the same distance both have a converter, the resolution is ambiguous and violates rule V-10:
+ * When two interfaces at the same distance both have a converter, the resolution is ambiguous and violates rule V-10:
  * declare a field converter, or register a converter for the exact type.
  *
  * <h2>Instantiation</h2>
