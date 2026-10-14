@@ -9,6 +9,7 @@ import cloud.baldilorenzo.sheetsmith.convert.ConversionContext;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.UUID;
 
 /** Types used by the auto-configuration tests. */
 public final class Fixtures {
@@ -69,5 +70,23 @@ public final class Fixtures {
     public record Dated(
             @ExcelColumn(header = "Day", order = 1) LocalDate day,
             @ExcelColumn(header = "Count", order = 2) int count) {
+    }
+
+    /** Field-level converter for a type with a built-in converter, deliberately not a bean. */
+    public static class ShortUuidConverter implements CellConverter<UUID> {
+        @Override
+        public CellValue convert(UUID value, ConversionContext context) {
+            return CellValue.text(value.toString().substring(0, 8));
+        }
+    }
+
+    @ExcelSheet
+    public record Identified(@ExcelColumn(header = "Id", order = 1) UUID id) {
+    }
+
+    @ExcelSheet
+    public record ShortIdentified(
+            @ExcelColumn(header = "Short id", order = 1, converter = ShortUuidConverter.class) UUID shortId,
+            @ExcelColumn(header = "Id", order = 2) UUID id) {
     }
 }

@@ -5,9 +5,25 @@ package cloud.baldilorenzo.sheetsmith.convert;
  * <p>
  * Built-in converters cover text ({@code CharSequence}, {@code Character}), numbers ({@code Number} and the
  * numeric primitives), booleans, enums (written as the constant name), {@code LocalDate} and
- * {@code LocalDateTime}. A column of any other type needs a converter, otherwise its sheet class violates rule
- * V-10. Converters produce values, not formatting: display formats come from the styles and the application
- * defaults.
+ * {@code LocalDateTime}. Since 1.1.0, built-in converters also cover:
+ * <ul>
+ *   <li>dates: {@code YearMonth}, written as ISO text such as {@code 2026-10}, and {@code Year}, written as a
+ *       number. Being a number, a {@code Year} follows the number format of the cell, including the default one:
+ *       declare {@code @ExcelColumn(format = "0")} to show it without separators or decimals;</li>
+ *   <li>identifiers and resources, written as text: {@code UUID}, {@code URI}, {@code URL}, {@code File} (its
+ *       path), {@code Currency} (its ISO code), {@code ZoneId} and {@code ZoneOffset} (their id) and
+ *       {@code Locale} (its language tag);</li>
+ *   <li>optional and atomic values: {@code OptionalInt}, {@code OptionalLong} and {@code OptionalDouble}, written
+ *       as a number, or as an empty cell that keeps its style when empty, and {@code AtomicBoolean}, written as a
+ *       boolean;</li>
+ *   <li>{@code java.sql.Date} and {@code java.sql.Timestamp}, written as a date and a date-time in the default
+ *       time zone of the JVM, when the {@code java.sql} module is present.</li>
+ * </ul>
+ * A column of any other type needs a converter, otherwise its sheet class violates rule V-10. What counts is the
+ * declared type of the field, not the type of its value at run time: a field declared as {@code java.util.Date}
+ * has no built-in converter and violates rule V-10 even when it holds a {@code java.sql.Timestamp}. To use the
+ * built-in converter, declare the field as {@code java.sql.Timestamp}, or declare a field converter. Converters
+ * produce values, not formatting: display formats come from the styles and the application defaults.
  *
  * <h2>Contract</h2>
  * <ul>
@@ -45,7 +61,11 @@ package cloud.baldilorenzo.sheetsmith.convert;
  *       distance;</li>
  *   <li>the built-in converters, looked up with the same rules 2 to 4.</li>
  * </ol>
- * An application converter for a supertype therefore wins over a built-in converter for the exact type. When two
+ * An application converter for a supertype therefore wins over a built-in converter for the exact type. The same
+ * holds for interfaces: an application converter registered for {@code Comparable} or {@code Serializable} also
+ * applies to the columns of type {@code UUID} or {@code LocalDate}, which implement them. To keep the built-in
+ * behaviour on such columns, declare a field converter, or register an application converter for the exact type.
+ * When two
  * interfaces at the same distance both have a converter, the resolution is ambiguous and violates rule V-10:
  * declare a field converter, or register a converter for the exact type.
  *
@@ -64,18 +84,18 @@ package cloud.baldilorenzo.sheetsmith.convert;
  * <h2>Example</h2>
  * A field converter, and a sheet class that declares it:
  * <pre>
- * public class UuidConverter implements CellConverter&lt;UUID&gt; {
+ * public class DurationInHoursConverter implements CellConverter&lt;Duration&gt; {
  *
  *     &#64;Override
- *     public CellValue convert(UUID value, ConversionContext context) {
- *         return CellValue.text(value.toString());
+ *     public CellValue convert(Duration value, ConversionContext context) {
+ *         return CellValue.number(value.toMinutes() / 60.0);
  *     }
  * }
  *
  * &#64;ExcelSheet
- * public record DocumentRow(
- *         &#64;ExcelColumn(header = "Id", order = 1, converter = UuidConverter.class) UUID id,
- *         &#64;ExcelColumn(header = "Title", order = 2) String title) {
+ * public record TaskRow(
+ *         &#64;ExcelColumn(header = "Task", order = 1) String task,
+ *         &#64;ExcelColumn(header = "Hours", order = 2, converter = DurationInHoursConverter.class) Duration spent) {
  * }
  * </pre>
  *

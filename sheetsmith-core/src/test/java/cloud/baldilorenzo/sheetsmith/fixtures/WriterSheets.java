@@ -11,11 +11,25 @@ import cloud.baldilorenzo.sheetsmith.convert.ConversionContext;
 import cloud.baldilorenzo.sheetsmith.style.Border;
 import cloud.baldilorenzo.sheetsmith.style.Toggle;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.URI;
+import java.net.URL;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Year;
+import java.time.YearMonth;
+import java.time.ZoneId;
+import java.util.Currency;
 import java.util.Date;
+import java.util.Locale;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
+import java.util.OptionalLong;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /** Exported classes used by the converter and writer tests. */
 public final class WriterSheets {
@@ -42,6 +56,27 @@ public final class WriterSheets {
             @ExcelColumn(header = "Date-time", order = 13) LocalDateTime moment,
             @ExcelColumn(header = "Builder", order = 14) StringBuilder builder,
             @ExcelColumn(header = "Formatted", order = 15, format = "0.0") double formatted) {
+    }
+
+    @ExcelSheet(body = @BodyStyles(base = "grid"))
+    @ExcelStyle(name = "grid", border = Border.THIN)
+    public record AdditionalTypes(
+            @ExcelColumn(header = "UUID", order = 1) UUID id,
+            @ExcelColumn(header = "URI", order = 2) URI uri,
+            @ExcelColumn(header = "URL", order = 3) URL url,
+            @ExcelColumn(header = "File", order = 4) File file,
+            @ExcelColumn(header = "Currency", order = 5) Currency currency,
+            @ExcelColumn(header = "Zone", order = 6) ZoneId zone,
+            @ExcelColumn(header = "Locale", order = 7) Locale locale,
+            @ExcelColumn(header = "Year-month", order = 8) YearMonth yearMonth,
+            @ExcelColumn(header = "Year", order = 9) Year year,
+            @ExcelColumn(header = "Atomic flag", order = 10) AtomicBoolean atomicFlag,
+            @ExcelColumn(header = "Optional int", order = 11) OptionalInt optionalInt,
+            @ExcelColumn(header = "Optional long", order = 12) OptionalLong optionalLong,
+            @ExcelColumn(header = "Optional double", order = 13) OptionalDouble optionalDouble,
+            @ExcelColumn(header = "SQL date", order = 14) java.sql.Date sqlDate,
+            @ExcelColumn(header = "Timestamp", order = 15) Timestamp timestamp,
+            @ExcelColumn(header = "Formatted year", order = 16, format = "0") Year formattedYear) {
     }
 
     @ExcelSheet(body = @BodyStyles(base = "grid"))
@@ -162,6 +197,13 @@ public final class WriterSheets {
 
     @ExcelSheet
     public record V10Unsupported(@ExcelColumn(header = "When", order = 1) Date when) {
+    }
+
+    /** Only the declared type counts: {@code legacy} may hold a {@code Timestamp} and still has no converter. */
+    @ExcelSheet
+    public record V10DeclaredType(
+            @ExcelColumn(header = "Legacy", order = 1) Date legacy,
+            @ExcelColumn(header = "Stamp", order = 2) Timestamp stamp) {
     }
 
     @ExcelSheet

@@ -77,6 +77,15 @@ class ConverterBinderTest {
     }
 
     @Test
+    void v10DependsOnTheDeclaredTypeNotOnTheRuntimeOne() {
+        assertThat(errors(binder, WriterSheets.V10DeclaredType.class)).singleElement().satisfies(error -> {
+            assertThat(error).extracting(ConfigurationError::code, ConfigurationError::element)
+                    .containsExactly("V-10", "legacy");
+            assertThat(error.message()).contains("java.util.Date");
+        });
+    }
+
+    @Test
     void v10AmbiguousConverter() {
         CellConverter<Object> converter = (value, context) -> CellValue.blank();
         ConverterBinder binder = new ConverterBinder(new ConverterRegistry(Map.of(

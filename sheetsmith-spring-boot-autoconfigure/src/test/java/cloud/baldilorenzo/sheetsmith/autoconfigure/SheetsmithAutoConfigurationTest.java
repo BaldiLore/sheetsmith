@@ -28,6 +28,8 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
@@ -36,6 +38,8 @@ import static org.assertj.core.api.Assertions.tuple;
 class SheetsmithAutoConfigurationTest {
 
     private static final String SCAN = "cloud.baldilorenzo.sheetsmith.autoconfigure.fixtures.scan";
+
+    private static final UUID ID = UUID.fromString("3f2a9c1e-7b4d-4e8a-9f61-2c5d8e0b4a17");
 
     private final ApplicationContextRunner runner = new ApplicationContextRunner()
             .withConfiguration(AutoConfigurations.of(SheetsmithAutoConfiguration.class));
@@ -78,6 +82,30 @@ class SheetsmithAutoConfigurationTest {
 
             assertThat(row.getCell(0).getStringCellValue()).isEqualTo("EUR 9.90");
             assertThat(row.getCell(1).getStringCellValue()).isEqualTo("epoch 1000");
+        });
+    }
+
+    @Test
+    void converterBeanReplacesAnAdditionalBuiltInConverter() {
+        runner.withUserConfiguration(UuidConverterBean.class).run(context -> {
+            assertThat(context).hasNotFailed();
+
+            Row row = firstDataRow(context.getBean(Sheetsmith.class), "Ids", Fixtures.Identified.class,
+                    new Fixtures.Identified(ID));
+
+            assertThat(row.getCell(0).getStringCellValue()).isEqualTo("3F2A9C1E-7B4D-4E8A-9F61-2C5D8E0B4A17");
+        });
+    }
+
+    @Test
+    void fieldConverterWinsOverAConverterBeanForAnAdditionalBuiltInType() {
+        runner.withUserConfiguration(UuidConverterBean.class).run(context -> {
+            Row row = firstDataRow(context.getBean(Sheetsmith.class), "Ids", Fixtures.ShortIdentified.class,
+                    new Fixtures.ShortIdentified(ID, ID));
+
+            assertThat(row.getCell(0).getStringCellValue()).isEqualTo("3f2a9c1e");
+            assertThat(row.getCell(1).getStringCellValue()).isEqualTo("3F2A9C1E-7B4D-4E8A-9F61-2C5D8E0B4A17");
+            assertThat(context).doesNotHaveBean(Fixtures.ShortUuidConverter.class);
         });
     }
 
@@ -251,6 +279,15 @@ class SheetsmithAutoConfigurationTest {
         @Bean
         CellConverter<Date> dateConverter() {
             return (value, context) -> CellValue.text("epoch " + value.getTime());
+        }
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    static class UuidConverterBean {
+
+        @Bean
+        CellConverter<UUID> uuidConverter() {
+            return (value, context) -> CellValue.text(value.toString().toUpperCase(Locale.ROOT));
         }
     }
 

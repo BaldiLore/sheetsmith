@@ -171,7 +171,7 @@ public interface Sheetsmith {
          * registered for a closer supertype of the column type. Primitive types are registered as their
          * wrappers, so a converter registered for {@code double.class} or {@code Double.class} applies to both
          * {@code double} and {@code Double} fields. A converter registered for a type that has a built-in
-         * converter, such as {@code Boolean}, {@code LocalDate} or {@code Enum}, replaces the built-in behaviour.
+         * converter, such as {@code Boolean}, {@code LocalDate}, {@code UUID} or {@code Enum}, replaces the built-in behaviour.
          * <p>
          * The instance built calls the converter from several threads when it generates concurrently, so the
          * converter must be thread-safe.
