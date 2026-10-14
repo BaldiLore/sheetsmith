@@ -47,7 +47,8 @@ import java.util.stream.Collectors;
  *         declared on the sheet class, and among the styles declared on each style sheet.</td>
  *         <td>Rename or merge the duplicates.</td></tr>
  *     <tr><th scope="row">V-08</th><td>The style sheets referenced by one class do not define the same style
- *         name: a conflict between two style sheets, not within one.</td><td>Rename the style in one style sheet, or redefine it on the class.</td></tr>
+ *         name: a conflict between two style sheets, not within one.</td><td>Rename the style in one style sheet,
+ *         or redefine it on the class.</td></tr>
  *     <tr><th scope="row">V-09</th><td>Every class listed in {@code styleSheets} is annotated with
  *         {@link cloud.baldilorenzo.sheetsmith.annotation.ExcelStyleSheet}.</td>
  *         <td>Annotate the style sheet class.</td></tr>
