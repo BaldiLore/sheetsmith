@@ -3,6 +3,7 @@ package cloud.baldilorenzo.sheetsmith.internal.convert;
 import cloud.baldilorenzo.sheetsmith.convert.CellConverter;
 import cloud.baldilorenzo.sheetsmith.convert.CellValue;
 import cloud.baldilorenzo.sheetsmith.fixtures.WriterSheets;
+import cloud.baldilorenzo.sheetsmith.value.Hyperlink;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -237,5 +238,32 @@ class ConverterRegistryTest {
 
         assertThat(registry.find(java.sql.Date.class)).isSameAs(sqlDate);
         assertThat(registry.find(Timestamp.class)).isSameAs(legacy);
+    }
+
+    @Test
+    void hyperlinkUsesItsBuiltInConverter() {
+        assertThat((Object) new ConverterRegistry(Map.of()).find(Hyperlink.class))
+                .isSameAs(BuiltInConverters.all().get(Hyperlink.class));
+    }
+
+    @Test
+    void applicationConverterForHyperlinkReplacesTheBuiltInOne() {
+        CellConverter<Object> link = named("link");
+        ConverterRegistry registry = new ConverterRegistry(Map.of(Hyperlink.class, link));
+
+        assertThat(registry.find(Hyperlink.class)).isSameAs(link);
+    }
+
+    /**
+     * {@code Hyperlink} is a record: an application converter registered for {@code Record} is found through its
+     * superclass before the built-in converters are searched, so the cells of a {@code Hyperlink} column are the ones
+     * produced by the application converter.
+     */
+    @Test
+    void applicationConverterForRecordWinsOverTheHyperlinkBuiltInOne() {
+        CellConverter<Object> record = named("record");
+        ConverterRegistry registry = new ConverterRegistry(Map.of(Record.class, record));
+
+        assertThat(registry.find(Hyperlink.class)).isSameAs(record);
     }
 }

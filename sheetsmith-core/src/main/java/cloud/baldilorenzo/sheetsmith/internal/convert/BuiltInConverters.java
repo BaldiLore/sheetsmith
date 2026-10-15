@@ -2,6 +2,7 @@ package cloud.baldilorenzo.sheetsmith.internal.convert;
 
 import cloud.baldilorenzo.sheetsmith.convert.CellConverter;
 import cloud.baldilorenzo.sheetsmith.convert.CellValue;
+import cloud.baldilorenzo.sheetsmith.value.Hyperlink;
 
 import java.io.File;
 import java.net.URI;
@@ -35,6 +36,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *       {@code Locale} (the language tag);</li>
  *   <li>optional and atomic values: {@code OptionalInt}, {@code OptionalLong} and {@code OptionalDouble}, written
  *       as a number or as a blank cell when empty, and {@code AtomicBoolean};</li>
+ *   <li>links: {@link Hyperlink}, written as a link ({@link CellValue.Link});</li>
  *   <li>{@code java.sql.Date} and {@code java.sql.Timestamp}, written as a date and a date-time in the default
  *       time zone of the JVM, when the {@code java.sql} module is present.</li>
  * </ul>
@@ -114,7 +116,9 @@ public final class BuiltInConverters {
                 Map.entry(OptionalDouble.class, (CellConverter<OptionalDouble>) (value, context) ->
                         value.isPresent() ? CellValue.number(value.getAsDouble()) : CellValue.blank()),
                 Map.entry(AtomicBoolean.class,
-                        (CellConverter<AtomicBoolean>) (value, context) -> CellValue.bool(value.get()))));
+                        (CellConverter<AtomicBoolean>) (value, context) -> CellValue.bool(value.get())),
+                // links
+                Map.entry(Hyperlink.class, (CellConverter<Hyperlink>) (value, context) -> CellValue.link(value))));
         // java.sql types, isolated so that this class never loads them when the module is missing
         if (sqlAvailable) {
             converters.putAll(SqlConverters.all());

@@ -5,6 +5,7 @@ import cloud.baldilorenzo.sheetsmith.annotation.ExcelSheet;
 import cloud.baldilorenzo.sheetsmith.convert.CellConverter;
 import cloud.baldilorenzo.sheetsmith.convert.CellValue;
 import cloud.baldilorenzo.sheetsmith.convert.ConversionContext;
+import cloud.baldilorenzo.sheetsmith.value.Hyperlink;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -88,5 +89,29 @@ public final class Fixtures {
     public record ShortIdentified(
             @ExcelColumn(header = "Short id", order = 1, converter = ShortUuidConverter.class) UUID shortId,
             @ExcelColumn(header = "Id", order = 2) UUID id) {
+    }
+
+    /** A domain type written as a link by a converter bean. */
+    public record OrderNumber(String value) {
+    }
+
+    /** Converter registered as a bean: writes an order number as a link to the page of the order. */
+    public static class OrderNumberConverter implements CellConverter<OrderNumber> {
+        @Override
+        public CellValue convert(OrderNumber value, ConversionContext context) {
+            return CellValue.link(Hyperlink.of("https://shop.example.com/orders/" + value.value(), value.value()));
+        }
+    }
+
+    @ExcelSheet
+    public record Ordered(
+            @ExcelColumn(header = "Customer", order = 1) String customer,
+            @ExcelColumn(header = "Order", order = 2) OrderNumber order) {
+    }
+
+    @ExcelSheet
+    public record Linked(
+            @ExcelColumn(header = "Name", order = 1) String name,
+            @ExcelColumn(header = "Link", order = 2) Hyperlink link) {
     }
 }

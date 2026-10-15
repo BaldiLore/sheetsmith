@@ -11,6 +11,9 @@ import cloud.baldilorenzo.sheetsmith.autoconfigure.fixtures.scan.invalid.Unconve
 import cloud.baldilorenzo.sheetsmith.convert.CellConverter;
 import cloud.baldilorenzo.sheetsmith.convert.CellValue;
 import cloud.baldilorenzo.sheetsmith.style.TablePreset;
+import cloud.baldilorenzo.sheetsmith.value.Hyperlink;
+import org.apache.poi.common.usermodel.HyperlinkType;
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.jupiter.api.Test;
@@ -106,6 +109,48 @@ class SheetsmithAutoConfigurationTest {
             assertThat(row.getCell(0).getStringCellValue()).isEqualTo("3f2a9c1e");
             assertThat(row.getCell(1).getStringCellValue()).isEqualTo("3F2A9C1E-7B4D-4E8A-9F61-2C5D8E0B4A17");
             assertThat(context).doesNotHaveBean(Fixtures.ShortUuidConverter.class);
+        });
+    }
+
+    @Test
+    void hyperlinkColumnGetsALinkWithoutConverterBeans() {
+        runner.run(context -> {
+            Row row = firstDataRow(context.getBean(Sheetsmith.class), "Links", Fixtures.Linked.class,
+                    new Fixtures.Linked("Docs", Hyperlink.of("https://example.com/docs", "Documentation")));
+
+            Cell cell = row.getCell(1);
+            assertThat(cell.getStringCellValue()).isEqualTo("Documentation");
+            assertThat(cell.getHyperlink()).isNotNull();
+            assertThat(cell.getHyperlink().getType()).isEqualTo(HyperlinkType.URL);
+            assertThat(cell.getHyperlink().getAddress()).isEqualTo("https://example.com/docs");
+        });
+    }
+
+    @Test
+    void converterBeanReturningTextForHyperlinkProducesACellWithoutLink() {
+        runner.withUserConfiguration(HyperlinkConverterBean.class).run(context -> {
+            assertThat(context).hasNotFailed();
+
+            Row row = firstDataRow(context.getBean(Sheetsmith.class), "Links", Fixtures.Linked.class,
+                    new Fixtures.Linked("Docs", Hyperlink.of("https://example.com/docs", "Documentation")));
+
+            assertThat(row.getCell(1).getStringCellValue()).isEqualTo("https://example.com/docs");
+            assertThat(row.getCell(1).getHyperlink()).isNull();
+        });
+    }
+
+    @Test
+    void converterBeanForADomainTypeCanProduceALink() {
+        runner.withUserConfiguration(OrderNumberConverterBean.class).run(context -> {
+            assertThat(context).hasNotFailed();
+
+            Row row = firstDataRow(context.getBean(Sheetsmith.class), "Orders", Fixtures.Ordered.class,
+                    new Fixtures.Ordered("Northwind Paper", new Fixtures.OrderNumber("SO-10482")));
+
+            Cell cell = row.getCell(1);
+            assertThat(cell.getStringCellValue()).isEqualTo("SO-10482");
+            assertThat(cell.getHyperlink().getType()).isEqualTo(HyperlinkType.URL);
+            assertThat(cell.getHyperlink().getAddress()).isEqualTo("https://shop.example.com/orders/SO-10482");
         });
     }
 
@@ -288,6 +333,24 @@ class SheetsmithAutoConfigurationTest {
         @Bean
         CellConverter<UUID> uuidConverter() {
             return (value, context) -> CellValue.text(value.toString().toUpperCase(Locale.ROOT));
+        }
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    static class HyperlinkConverterBean {
+
+        @Bean
+        CellConverter<Hyperlink> hyperlinkConverter() {
+            return (value, context) -> CellValue.text(value.address().toString());
+        }
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    static class OrderNumberConverterBean {
+
+        @Bean
+        Fixtures.OrderNumberConverter orderNumberConverter() {
+            return new Fixtures.OrderNumberConverter();
         }
     }
 

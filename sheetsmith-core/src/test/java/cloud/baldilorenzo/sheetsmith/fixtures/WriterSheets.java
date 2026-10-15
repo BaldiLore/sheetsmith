@@ -1,6 +1,7 @@
 package cloud.baldilorenzo.sheetsmith.fixtures;
 
 import cloud.baldilorenzo.sheetsmith.annotation.BodyStyles;
+import cloud.baldilorenzo.sheetsmith.annotation.ColumnStyles;
 import cloud.baldilorenzo.sheetsmith.annotation.ExcelColumn;
 import cloud.baldilorenzo.sheetsmith.annotation.ExcelSheet;
 import cloud.baldilorenzo.sheetsmith.annotation.ExcelStyle;
@@ -9,7 +10,10 @@ import cloud.baldilorenzo.sheetsmith.convert.CellConverter;
 import cloud.baldilorenzo.sheetsmith.convert.CellValue;
 import cloud.baldilorenzo.sheetsmith.convert.ConversionContext;
 import cloud.baldilorenzo.sheetsmith.style.Border;
+import cloud.baldilorenzo.sheetsmith.style.TablePreset;
 import cloud.baldilorenzo.sheetsmith.style.Toggle;
+import cloud.baldilorenzo.sheetsmith.style.Underline;
+import cloud.baldilorenzo.sheetsmith.value.Hyperlink;
 
 import java.io.File;
 import java.math.BigDecimal;
@@ -155,6 +159,69 @@ public final class WriterSheets {
         }
     }
 
+    // ---- hyperlinks ----
+
+    @ExcelSheet
+    public record Links(
+            @ExcelColumn(header = "Name", order = 1) String name,
+            @ExcelColumn(header = "Link", order = 2) Hyperlink link) {
+    }
+
+    @ExcelSheet(body = @BodyStyles(base = "grid"))
+    @ExcelStyle(name = "grid", border = Border.THIN)
+    public record GridLinks(
+            @ExcelColumn(header = "Name", order = 1) String name,
+            @ExcelColumn(header = "Link", order = 2) Hyperlink link) {
+    }
+
+    /** Writes the description in upper case as text: the cells get no link. */
+    public static class UpperDescription implements CellConverter<Hyperlink> {
+        @Override
+        public CellValue convert(Hyperlink value, ConversionContext context) {
+            return CellValue.text(value.text().toUpperCase(Locale.ROOT));
+        }
+    }
+
+    @ExcelSheet
+    public record ConvertedLinks(
+            @ExcelColumn(header = "Link", order = 1, converter = UpperDescription.class) Hyperlink link) {
+    }
+
+    /** Keeps the link and replaces its description. */
+    public static class RelabelledLink implements CellConverter<Hyperlink> {
+        @Override
+        public CellValue convert(Hyperlink value, ConversionContext context) {
+            return CellValue.link(Hyperlink.of(value.address(), "Open " + value.text()));
+        }
+    }
+
+    @ExcelSheet
+    public record RelabelledLinks(
+            @ExcelColumn(header = "Link", order = 1, converter = RelabelledLink.class) Hyperlink link) {
+    }
+
+    /** A domain type written as a link by an application converter. */
+    public record OrderNumber(String value) {
+    }
+
+    @ExcelSheet
+    public record Orders(
+            @ExcelColumn(header = "Customer", order = 1) String customer,
+            @ExcelColumn(header = "Order", order = 2) OrderNumber order) {
+    }
+
+    @ExcelSheet
+    @ExcelStyle(name = "plain", fontColor = "#C00000", underline = Underline.NONE)
+    public record PlainStyledLinks(
+            @ExcelColumn(header = "Link", order = 1, styles = @ColumnStyles(base = "plain")) Hyperlink link) {
+    }
+
+    @ExcelSheet(preset = TablePreset.DARK)
+    public record DarkLinks(
+            @ExcelColumn(header = "Name", order = 1) String name,
+            @ExcelColumn(header = "Link", order = 2) Hyperlink link) {
+    }
+
     // ---- binding ----
 
     /** Handles any type: its type argument cannot be determined from the class declaration. */
@@ -204,6 +271,11 @@ public final class WriterSheets {
     public record V10DeclaredType(
             @ExcelColumn(header = "Legacy", order = 1) Date legacy,
             @ExcelColumn(header = "Stamp", order = 2) Timestamp stamp) {
+    }
+
+    /** Only the declared type counts: {@code link} may hold a {@code Hyperlink} and still has no converter. */
+    @ExcelSheet
+    public record V10ObjectLink(@ExcelColumn(header = "Link", order = 1) Object link) {
     }
 
     @ExcelSheet

@@ -2,6 +2,7 @@ package cloud.baldilorenzo.sheetsmith.internal.convert;
 
 import cloud.baldilorenzo.sheetsmith.convert.CellConverter;
 import cloud.baldilorenzo.sheetsmith.convert.CellValue;
+import cloud.baldilorenzo.sheetsmith.value.Hyperlink;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -130,6 +131,17 @@ class BuiltInConvertersTest {
     }
 
     @Test
+    void hyperlinkIsWrittenAsALinkToTheSameObject() {
+        Hyperlink described = Hyperlink.of("https://example.com/docs", "Documentation");
+        Hyperlink plain = Hyperlink.of("mailto:info@example.com");
+
+        assertThat(convert(Hyperlink.class, described)).isEqualTo(new CellValue.Link(described))
+                .extracting(value -> ((CellValue.Link) value).value()).isSameAs(described);
+        assertThat(convert(Hyperlink.class, plain)).isEqualTo(new CellValue.Link(plain))
+                .extracting(value -> ((CellValue.Link) value).value()).isSameAs(plain);
+    }
+
+    @Test
     void noInterfaceIsAKeyExceptCharSequence() {
         assertThat(BuiltInConverters.all().keySet()).filteredOn(Class::isInterface)
                 .as("built-in converters must be registered for classes only, CharSequence apart: a domain type "
@@ -190,6 +202,8 @@ class BuiltInConvertersTest {
                 "java.util.OptionalLong",
                 "java.util.OptionalDouble",
                 "java.util.concurrent.atomic.AtomicBoolean",
+                // values with special handling
+                "cloud.baldilorenzo.sheetsmith.value.Hyperlink",
                 // java.sql types
                 "java.sql.Date",
                 "java.sql.Timestamp");

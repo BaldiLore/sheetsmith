@@ -60,8 +60,8 @@ public interface Sheetsmith {
      * <p>
      * Problems in the data are found while writing and reported as a {@link SheetsmithGenerationException} naming
      * the sheet, the 1-based data row and, where relevant, the field: a null element in a data list, a getter or
-     * converter that throws, a converter that returns null, a text longer than 32,767 characters, or more rows
-     * than Excel allows in a sheet (1,048,576, title and header included).
+     * converter that throws, a converter that returns null, a text longer than 32,767 characters (the text shown
+     * by a link included), or more rows than Excel allows in a sheet (1,048,576, title and header included).
      *
      * @param sheets the sheets, in workbook order; not null and without null elements
      * @return the content of the xlsx file

@@ -13,7 +13,8 @@ import java.util.Optional;
  *       exception;</li>
  *   <li>a converter that returns null instead of
  *       {@link cloud.baldilorenzo.sheetsmith.convert.CellValue#blank()};</li>
- *   <li>a text longer than 32,767 characters, the Excel limit for a cell;</li>
+ *   <li>a text longer than 32,767 characters, the Excel limit for a cell, including the text shown by a
+ *       {@link cloud.baldilorenzo.sheetsmith.value.Hyperlink};</li>
  *   <li>more rows than Excel allows in a sheet: 1,048,576, title and header included.</li>
  * </ul>
  * The exception tells where the problem is: {@link #sheetName()}, {@link #rowIndex()} and {@link #fieldName()}. The

@@ -10,7 +10,8 @@
  *   <li>{@link cloud.baldilorenzo.sheetsmith.convert.ConversionContext}: where a value is being written;</li>
  *   <li>{@link cloud.baldilorenzo.sheetsmith.convert.CellConverterFactory}: creates the field converters.</li>
  * </ul>
- * Text, numbers, booleans, enums, dates, common identifiers and a few optional values have built-in converters,
- * listed in {@link cloud.baldilorenzo.sheetsmith.convert.CellConverter}; any other type needs a converter.
+ * Text, numbers, booleans, enums, dates, common identifiers, a few optional values and links
+ * ({@link cloud.baldilorenzo.sheetsmith.value.Hyperlink}) have built-in converters, listed in
+ * {@link cloud.baldilorenzo.sheetsmith.convert.CellConverter}; any other type needs a converter.
  */
 package cloud.baldilorenzo.sheetsmith.convert;

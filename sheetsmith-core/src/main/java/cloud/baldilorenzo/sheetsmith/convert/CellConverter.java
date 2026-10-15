@@ -17,7 +17,10 @@ package cloud.baldilorenzo.sheetsmith.convert;
  *       as a number, or as an empty cell that keeps its style when empty, and {@code AtomicBoolean}, written as a
  *       boolean;</li>
  *   <li>{@code java.sql.Date} and {@code java.sql.Timestamp}, written as a date and a date-time in the default
- *       time zone of the JVM, when the {@code java.sql} module is present.</li>
+ *       time zone of the JVM, when the {@code java.sql} module is present;</li>
+ *   <li>{@link cloud.baldilorenzo.sheetsmith.value.Hyperlink}, written as a link: the text it shows, with a
+ *       clickable link. Any converter can produce a link by returning
+ *       {@link CellValue#link(cloud.baldilorenzo.sheetsmith.value.Hyperlink)}.</li>
  * </ul>
  * A column of any other type needs a converter, otherwise its sheet class violates rule V-10. What counts is the
  * declared type of the field, not the type of its value at run time: a field declared as {@code java.util.Date}
@@ -80,7 +83,7 @@ package cloud.baldilorenzo.sheetsmith.convert;
  * In a Spring Boot application, a converter declared as a bean is also registered as an application converter
  * for its type. A converter meant for one column only should therefore not be a bean.
  *
- * <h2>Example</h2>
+ * <h2>Examples</h2>
  * A field converter, and a sheet class that declares it:
  * <pre>
  * public class DurationInHoursConverter implements CellConverter&lt;Duration&gt; {
@@ -96,6 +99,24 @@ package cloud.baldilorenzo.sheetsmith.convert;
  *         &#64;ExcelColumn(header = "Task", order = 1) String task,
  *         &#64;ExcelColumn(header = "Hours", order = 2, converter = DurationInHoursConverter.class) Duration spent) {
  * }
+ * </pre>
+ * An application converter that writes a domain type as a link to its page, with the order number as the text
+ * shown:
+ * <pre>
+ * public record OrderNumber(String value) {
+ * }
+ *
+ * public class OrderNumberConverter implements CellConverter&lt;OrderNumber&gt; {
+ *
+ *     &#64;Override
+ *     public CellValue convert(OrderNumber value, ConversionContext context) {
+ *         return CellValue.link(Hyperlink.of("https://shop.example.com/orders/" + value.value(), value.value()));
+ *     }
+ * }
+ *
+ * Sheetsmith sheetsmith = Sheetsmith.builder()
+ *         .converter(OrderNumber.class, new OrderNumberConverter())
+ *         .build();
  * </pre>
  *
  * @param <T> the type of the values this converter handles

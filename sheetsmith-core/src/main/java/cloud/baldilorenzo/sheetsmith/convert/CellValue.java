@@ -1,16 +1,18 @@
 package cloud.baldilorenzo.sheetsmith.convert;
 
+import cloud.baldilorenzo.sheetsmith.value.Hyperlink;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
- * A value that sheetsmith writes natively to a cell: text, number, boolean, date, date-time or blank.
+ * A value that sheetsmith writes natively to a cell: text, number, boolean, date, date-time, link or blank.
  * <p>
  * Converters return a {@code CellValue}, created with the factory methods {@link #text(String)},
- * {@link #number(double)}, {@link #bool(boolean)}, {@link #date(LocalDate)}, {@link #dateTime(LocalDateTime)}
- * and {@link #blank()}. The built-in converters produce the same kinds of values. The display format of the cell
- * comes from the styles, never from the value.
+ * {@link #number(double)}, {@link #bool(boolean)}, {@link #date(LocalDate)}, {@link #dateTime(LocalDateTime)},
+ * {@link #link(Hyperlink)} and {@link #blank()}. The built-in converters produce the same kinds of values. The
+ * display format of the cell comes from the styles, never from the value.
  *
  * <h2>How each kind is written</h2>
  * <ul>
@@ -22,6 +24,9 @@ import java.util.Objects;
  *   <li>{@link Date} and {@link DateTime}: Excel date cells. When the effective style of the cell sets no format,
  *       they receive the default date or date-time format of
  *       {@link cloud.baldilorenzo.sheetsmith.SheetsmithDefaults}.</li>
+ *   <li>{@link Link}: a text cell showing the text of the link, {@link Hyperlink#text()}, with the clickable link
+ *       attached. The cell is underlined and blue ({@code #0563C1}), each only when the styles of the cell do not
+ *       already set the underline or the font colour.</li>
  *   <li>{@link Blank}: an empty cell that keeps its resolved style, so fills and borders stay continuous.</li>
  * </ul>
  * Numeric cells receive the default number format, when one is configured and the effective style sets no format.
@@ -44,7 +49,7 @@ import java.util.Objects;
  *     <tr><th scope="row">Number with more than 15 significant digits</th>
  *         <td>Precision is lost: a {@code long} above 2<sup>53</sup> or a large {@code BigDecimal} is rounded</td>
  *         <td>Write identifiers and exact decimals as text</td></tr>
- *     <tr><th scope="row">Text longer than 32,767 characters</th>
+ *     <tr><th scope="row">Text longer than 32,767 characters, including the text shown by a link</th>
  *         <td>Excel cannot store it: generation fails with a
  *         {@link cloud.baldilorenzo.sheetsmith.SheetsmithGenerationException}</td>
  *         <td>Shorten the text before writing it</td></tr>
@@ -150,6 +155,28 @@ public sealed interface CellValue {
     }
 
     /**
+     * A link cell: a text cell showing {@link Hyperlink#text()}, with the clickable link attached. The address is
+     * validated by {@link Hyperlink}. The text shown is subject to the limit of 32,767 characters, and the cell gets
+     * the appearance of a link where its styles do not decide, as described in {@link CellValue}.
+     *
+     * @param value the link, not null
+     * @see CellValue#link(Hyperlink)
+     * @since 1.1.0
+     */
+    record Link(Hyperlink value) implements CellValue {
+
+        /**
+         * Creates a link value.
+         *
+         * @param value the link, not null
+         * @throws NullPointerException if {@code value} is null
+         */
+        public Link {
+            Objects.requireNonNull(value, "value");
+        }
+    }
+
+    /**
      * An empty cell that keeps its resolved style. The only instance is returned by {@link CellValue#blank()}.
      *
      * @since 1.0.0
@@ -218,6 +245,18 @@ public sealed interface CellValue {
      */
     static CellValue dateTime(LocalDateTime value) {
         return new DateTime(value);
+    }
+
+    /**
+     * Returns a link value, written as a text cell with a clickable link.
+     *
+     * @param value the link, not null
+     * @return the cell value
+     * @throws NullPointerException if {@code value} is null
+     * @since 1.1.0
+     */
+    static CellValue link(Hyperlink value) {
+        return new Link(value);
     }
 
     /**
