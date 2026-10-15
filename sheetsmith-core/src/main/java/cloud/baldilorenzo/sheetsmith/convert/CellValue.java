@@ -32,8 +32,8 @@ import java.util.Objects;
  * Numeric cells receive the default number format, when one is configured and the effective style sets no format.
  *
  * <h2 id="known-limitations">Known Excel limitations</h2>
- * The following behaviours come from Excel and Apache POI. Apart from the text length, sheetsmith does not turn
- * them into errors; handle them with a converter, or with naming, when they matter.
+ * The following behaviours come from Excel and Apache POI. Apart from the text length and the number of links,
+ * sheetsmith does not turn them into errors; handle them with a converter, or with naming, when they matter.
  * <table class="striped">
  *   <caption>Known Excel limitations</caption>
  *   <thead>
@@ -53,6 +53,11 @@ import java.util.Objects;
  *         <td>Excel cannot store it: generation fails with a
  *         {@link cloud.baldilorenzo.sheetsmith.SheetsmithGenerationException}</td>
  *         <td>Shorten the text before writing it</td></tr>
+ *     <tr><th scope="row">More than 65,530 links in a sheet</th>
+ *         <td>Excel cannot open the file without repairing it, and the repair removes every link of the sheet:
+ *         generation fails with a {@link cloud.baldilorenzo.sheetsmith.SheetsmithGenerationException}</td>
+ *         <td>Split the data over several sheets, or write the less important links as text with a
+ *         converter</td></tr>
  *     <tr><th scope="row">Sheet named {@code History}</th>
  *         <td>Excel reserves the name for change tracking and may refuse or repair the file</td>
  *         <td>Choose another sheet name</td></tr>
@@ -157,7 +162,8 @@ public sealed interface CellValue {
     /**
      * A link cell: a text cell showing {@link Hyperlink#text()}, with the clickable link attached. The address is
      * validated by {@link Hyperlink}. The text shown is subject to the limit of 32,767 characters, and the cell gets
-     * the appearance of a link where its styles do not decide, as described in {@link CellValue}.
+     * the appearance of a link where its styles do not decide, as described in {@link CellValue}. A sheet holds at
+     * most 65,530 links, counted over all its columns: one more fails the generation.
      *
      * @param value the link, not null
      * @see CellValue#link(Hyperlink)

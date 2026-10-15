@@ -187,6 +187,24 @@ public final class WriterSheets {
             @ExcelColumn(header = "Link", order = 1, converter = UpperDescription.class) Hyperlink link) {
     }
 
+    /** Many rows of links: no automatic sizing, to keep the limit tests fast. */
+    @ExcelSheet(freezeHeader = false, autoSizeColumns = false)
+    public record ManyLinks(@ExcelColumn(header = "Link", order = 1, width = 40) Hyperlink link) {
+    }
+
+    @ExcelSheet(freezeHeader = false, autoSizeColumns = false)
+    public record TwoLinkColumns(
+            @ExcelColumn(header = "First", order = 1, width = 40) Hyperlink first,
+            @ExcelColumn(header = "Second", order = 2, width = 40) Hyperlink second) {
+    }
+
+    /** A link column, possibly null, next to a column whose converter writes the link as text. */
+    @ExcelSheet(freezeHeader = false, autoSizeColumns = false)
+    public record LinksAndText(
+            @ExcelColumn(header = "Link", order = 1, width = 40) Hyperlink link,
+            @ExcelColumn(header = "Text", order = 2, width = 40, converter = UpperDescription.class) Hyperlink text) {
+    }
+
     /** Keeps the link and replaces its description. */
     public static class RelabelledLink implements CellConverter<Hyperlink> {
         @Override

@@ -19,7 +19,10 @@ import java.util.Objects;
  * The cell shows the description, or the address when there is no description. A null, empty or blank description
  * counts as no description and is stored as null; any other description is kept as it is, without trimming. The
  * text shown is subject to the Excel limit of 32,767 characters for a cell: a longer text fails the generation with
- * a {@link cloud.baldilorenzo.sheetsmith.SheetsmithGenerationException}.
+ * a {@link cloud.baldilorenzo.sheetsmith.SheetsmithGenerationException}. A sheet holds at most 65,530 links, the
+ * Excel limit, counted over all its columns and whichever converter produced them: the generation fails with the
+ * same exception at the first link over the limit, because Excel would repair the file by removing every link of
+ * the sheet.
  *
  * <h2>Addresses</h2>
  * The address must be an absolute URI with one of the schemes {@code http}, {@code https} or {@code mailto}, in any

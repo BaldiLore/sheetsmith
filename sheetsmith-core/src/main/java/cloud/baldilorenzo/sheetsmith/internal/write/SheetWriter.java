@@ -43,6 +43,9 @@ public final class SheetWriter {
     /** Maximum number of characters of an Excel text cell. */
     static final int MAX_TEXT_LENGTH = 32_767;
 
+    /** Maximum number of hyperlinks of an Excel sheet. */
+    static final int MAX_HYPERLINKS = 65_530;
+
     /** Maximum column width, in characters. */
     static final int MAX_WIDTH = 255;
 
@@ -121,6 +124,8 @@ public final class SheetWriter {
         /** Final style of the data cells per column, role and value kind: the cascade runs once per key. */
         private final Map<DataStyleKey, CellStyle> dataStyles = new HashMap<>();
         private DataFormatter formatter;
+        /** Hyperlinks written so far in the sheet, over all its columns. */
+        private int hyperlinks;
 
         Run(Workbook workbook, StyleCache styles, WritableSheet input) {
             this.styles = styles;
@@ -222,6 +227,10 @@ public final class SheetWriter {
                 kind = ValueKind.TEXT;
             } else if (converted instanceof CellValue.Link link) {
                 cell.setCellValue(checkedText(link.value().text(), i, definition));
+                if (++hyperlinks > MAX_HYPERLINKS) {
+                    throw new SheetsmithGenerationException("hyperlink " + hyperlinks + " exceeds the Excel limit of "
+                            + MAX_HYPERLINKS + " hyperlinks in a sheet", name, i, definition.fieldName(), null);
+                }
                 addHyperlink(cell, link, i, definition);
                 kind = ValueKind.HYPERLINK;
             } else if (converted instanceof CellValue.Numeric numeric) {

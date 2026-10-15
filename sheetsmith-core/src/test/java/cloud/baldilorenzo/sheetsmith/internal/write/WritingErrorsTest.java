@@ -8,6 +8,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -138,6 +139,63 @@ class WritingErrorsTest {
         assertThat(exception.fieldName()).contains("order");
         assertThat(exception).hasMessage("text of 32768 characters exceeds the Excel limit of 32767 "
                 + "(sheet 'Orders', row 1, field 'order')");
+    }
+
+    private static final Hyperlink LINK = Hyperlink.of("https://example.com/items", "Item");
+
+    @Test
+    void sheetWithExactlyTheMaximumNumberOfLinksIsWritten() throws IOException {
+        try (XSSFWorkbook workbook = write(manyLinks("Links", SheetWriter.MAX_HYPERLINKS))) {
+            assertThat(workbook.getSheet("Links").getHyperlinkList()).hasSize(SheetWriter.MAX_HYPERLINKS);
+        }
+    }
+
+    @Test
+    void linkAboveTheExcelLimitIsReportedWithSheetRowAndField() {
+        SheetsmithGenerationException exception = failure(manyLinks("Links", SheetWriter.MAX_HYPERLINKS + 1));
+
+        assertThat(exception.sheetName()).isEqualTo("Links");
+        assertThat(exception.rowIndex()).isEqualTo(SheetWriter.MAX_HYPERLINKS + 1);
+        assertThat(exception.fieldName()).contains("link");
+        assertThat(exception).hasMessage("hyperlink 65531 exceeds the Excel limit of 65530 hyperlinks in a sheet "
+                + "(sheet 'Links', row 65531, field 'link')");
+    }
+
+    @Test
+    void linksAreCountedOverAllTheColumnsOfTheSheet() {
+        // two links per row: the 65,531st link is the first one of row 32,766
+        List<WriterSheets.TwoLinkColumns> rows = Collections.nCopies(32_766,
+                new WriterSheets.TwoLinkColumns(LINK, LINK));
+
+        SheetsmithGenerationException exception = failure(sheet("Links", WriterSheets.TwoLinkColumns.class, rows));
+
+        assertThat(exception.rowIndex()).isEqualTo(32_766);
+        assertThat(exception.fieldName()).contains("first");
+        assertThat(exception.getMessage()).contains("65530");
+    }
+
+    @Test
+    void linksAreCountedPerSheet() throws IOException {
+        try (XSSFWorkbook workbook = write(manyLinks("First", SheetWriter.MAX_HYPERLINKS),
+                manyLinks("Second", SheetWriter.MAX_HYPERLINKS))) {
+            assertThat(workbook.getSheet("First").getHyperlinkList()).hasSize(SheetWriter.MAX_HYPERLINKS);
+            assertThat(workbook.getSheet("Second").getHyperlinkList()).hasSize(SheetWriter.MAX_HYPERLINKS);
+        }
+    }
+
+    @Test
+    void nullValuesAndLinksWrittenAsTextAreNotCounted() throws IOException {
+        List<WriterSheets.LinksAndText> rows = new ArrayList<>(Collections.nCopies(SheetWriter.MAX_HYPERLINKS,
+                new WriterSheets.LinksAndText(LINK, LINK)));
+        rows.addAll(Collections.nCopies(10, new WriterSheets.LinksAndText(null, LINK)));
+
+        try (XSSFWorkbook workbook = write(sheet("Links", WriterSheets.LinksAndText.class, rows))) {
+            assertThat(workbook.getSheet("Links").getHyperlinkList()).hasSize(SheetWriter.MAX_HYPERLINKS);
+        }
+    }
+
+    private static WritableSheet manyLinks(String name, int count) {
+        return sheet(name, WriterSheets.ManyLinks.class, Collections.nCopies(count, new WriterSheets.ManyLinks(LINK)));
     }
 
     @Test
