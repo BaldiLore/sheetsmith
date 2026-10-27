@@ -54,9 +54,10 @@ public interface Sheetsmith {
      * <p>
      * The input and every sheet class are validated before anything is written: the sheet list must not be empty
      * (rule V-18), sheet names must be valid (V-19) and unique ignoring case (V-20), and every sheet class must
-     * satisfy rules V-01 to V-17 and V-21 to V-25, the template it references included. The errors of the input and of all the classes are reported together in one
-     * {@link SheetsmithConfigurationException}, and no workbook is written. A class that fails validation is not
-     * cached and is rejected at every call until it is fixed.
+     * satisfy rules V-01 to V-17 and V-21 to V-25, the template it references included. The errors of the input
+     * and of all the classes are reported together in one {@link SheetsmithConfigurationException}, each once
+     * even when several sheet classes share an invalid template or style sheet, and no workbook is written. A
+     * class that fails validation is not cached and is rejected at every call until it is fixed.
      * <p>
      * Problems in the data are found while writing and reported as a {@link SheetsmithGenerationException} naming
      * the sheet, the 1-based data row and, where relevant, the field: a null element in a data list, a getter or

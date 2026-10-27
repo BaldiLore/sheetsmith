@@ -74,6 +74,34 @@ class SheetsmithTemplateTest {
     }
 
     @Test
+    void generateReportsTheErrorsOfATemplateSharedByTwoSheetClassesOnce() {
+        SheetsmithConfigurationException exception = catchThrowableOfType(SheetsmithConfigurationException.class,
+                () -> sheetsmith.generate(List.of(
+                        SheetData.of("Invoices", InvalidTemplates.UsesTemplateWithInvalidColors.class, List.of()),
+                        SheetData.of("Purchases", InvalidTemplates.AlsoUsesTemplateWithInvalidColors.class,
+                                List.of()))));
+
+        assertThat(exception.errors())
+                .extracting(ConfigurationError::code, ConfigurationError::type, ConfigurationError::element)
+                .containsExactly(
+                        tuple("V-13", InvalidTemplates.V13InvalidColors.class, "@ExcelSheetTemplate"),
+                        tuple("V-13", InvalidTemplates.V13InvalidColors.class, "@ExcelSheetTemplate"),
+                        tuple("V-04", InvalidTemplates.AlsoUsesTemplateWithInvalidColors.class, "a"));
+    }
+
+    @Test
+    void generateReportsTheErrorsOfAStyleSheetSharedByTwoSheetClassesOnce() {
+        SheetsmithConfigurationException exception = catchThrowableOfType(SheetsmithConfigurationException.class,
+                () -> sheetsmith.generate(List.of(
+                        SheetData.of("First", InvalidSheets.FirstUsesInvalidStyleSheet.class, List.of()),
+                        SheetData.of("Second", InvalidSheets.SecondUsesInvalidStyleSheet.class, List.of()))));
+
+        assertThat(exception.errors())
+                .extracting(ConfigurationError::code, ConfigurationError::type, ConfigurationError::element)
+                .containsExactly(tuple("V-13", InvalidSheets.InvalidSharedStyleSheet.class, "@ExcelStyle(bad)"));
+    }
+
+    @Test
     void generateWritesTwoSheetClassesThatReferenceTheSameTemplate() throws IOException {
         byte[] file = sheetsmith.generate(List.of(
                 SheetData.of("Report", TemplateSheets.InheritsEverything.class, List.of()),

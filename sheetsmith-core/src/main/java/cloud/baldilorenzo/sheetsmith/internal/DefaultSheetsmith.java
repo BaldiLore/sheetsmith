@@ -28,6 +28,7 @@ import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -71,7 +72,8 @@ public final class DefaultSheetsmith implements Sheetsmith {
     public void generate(List<SheetData<?>> sheets, OutputStream out) {
         Objects.requireNonNull(sheets, "sheets");
         Objects.requireNonNull(out, "out");
-        List<ConfigurationError> errors = new ArrayList<>(inputErrors(sheets));
+        // several sheet classes can report the same errors of a shared template or style sheet: each is kept once
+        LinkedHashSet<ConfigurationError> errors = new LinkedHashSet<>(inputErrors(sheets));
 
         Map<Class<?>, SheetBinding> bound = new HashMap<>();
         for (SheetData<?> sheet : sheets) {
@@ -86,7 +88,7 @@ public final class DefaultSheetsmith implements Sheetsmith {
             }
         }
         if (!errors.isEmpty()) {
-            throw new SheetsmithConfigurationException(errors);
+            throw new SheetsmithConfigurationException(List.copyOf(errors));
         }
 
         List<WritableSheet> writable = new ArrayList<>(sheets.size());

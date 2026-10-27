@@ -125,6 +125,11 @@ public final class InvalidTemplates {
     public record UsesTemplateWithInvalidColors(@ExcelColumn(header = "A", order = 1) String a) {
     }
 
+    /** A second sheet class on the same invalid template, with an error of its own. */
+    @ExcelSheet(template = V13InvalidColors.class)
+    public record AlsoUsesTemplateWithInvalidColors(@ExcelColumn(header = " ", order = 1) String a) {
+    }
+
     @ExcelSheet(template = V08StyleSheetConflict.class, styleSheets = FirstStyleSheet.class)
     public record UsesTemplateWithStyleSheetConflict(@ExcelColumn(header = "A", order = 1) String a) {
     }

@@ -119,6 +119,20 @@ public final class InvalidSheets {
         private String a;
     }
 
+    /** A style sheet with an invalid colour, shared by two sheet classes. */
+    @ExcelStyleSheet
+    @ExcelStyle(name = "bad", fontColor = "#GG0000")
+    public static class InvalidSharedStyleSheet {
+    }
+
+    @ExcelSheet(styleSheets = InvalidSharedStyleSheet.class)
+    public record FirstUsesInvalidStyleSheet(@ExcelColumn(header = "A", order = 1) String a) {
+    }
+
+    @ExcelSheet(styleSheets = InvalidSharedStyleSheet.class)
+    public record SecondUsesInvalidStyleSheet(@ExcelColumn(header = "A", order = 1) String a) {
+    }
+
     /** Violates an extraction rule and a binding rule. */
     @ExcelSheet
     public record ExtractionAndBindingErrors(
