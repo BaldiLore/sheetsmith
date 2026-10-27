@@ -39,7 +39,11 @@ jobs:
           cache: maven
 
       # Plain build without the release profile: no signing, no secrets.
+      # javadoc:javadoc applies the same strict doclint configuration as the
+      # release, so Javadoc errors surface here and not on release day. It runs
+      # in the same invocation as verify, so the modules resolve each other
+      # from the reactor without being installed.
       # Invoked through sh so the wrapper works even if the executable bit
       # was lost when committing from Windows.
-      - name: Build and test
-        run: sh ./mvnw --batch-mode --no-transfer-progress verify
+      - name: Build, test and check the Javadoc
+        run: sh ./mvnw --batch-mode --no-transfer-progress verify javadoc:javadoc
