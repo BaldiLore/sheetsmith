@@ -6,6 +6,8 @@ import cloud.baldilorenzo.sheetsmith.SheetData;
 import cloud.baldilorenzo.sheetsmith.Sheetsmith;
 import cloud.baldilorenzo.sheetsmith.SheetsmithConfigurationException;
 import cloud.baldilorenzo.sheetsmith.SheetsmithDefaults;
+import cloud.baldilorenzo.sheetsmith.annotation.ExcelSheet;
+import cloud.baldilorenzo.sheetsmith.annotation.ExcelSheetTemplate;
 import cloud.baldilorenzo.sheetsmith.convert.CellConverter;
 import cloud.baldilorenzo.sheetsmith.convert.CellConverterFactory;
 import cloud.baldilorenzo.sheetsmith.internal.convert.ConverterBinder;
@@ -111,10 +113,16 @@ public final class DefaultSheetsmith implements Sheetsmith {
 
     @Override
     public void validate(Class<?> type) {
-        List<ConfigurationError> errors = errors(Objects.requireNonNull(type, "type"));
+        Objects.requireNonNull(type, "type");
+        List<ConfigurationError> errors = isTemplate(type) ? extractor.inspectTemplate(type).errors() : errors(type);
         if (!errors.isEmpty()) {
             throw new SheetsmithConfigurationException(errors);
         }
+    }
+
+    /** Whether a class is a sheet template only: a class that is also a sheet class is validated as one. */
+    private static boolean isTemplate(Class<?> type) {
+        return type.isAnnotationPresent(ExcelSheetTemplate.class) && !type.isAnnotationPresent(ExcelSheet.class);
     }
 
     /** Extraction and binding errors of a class, together. */

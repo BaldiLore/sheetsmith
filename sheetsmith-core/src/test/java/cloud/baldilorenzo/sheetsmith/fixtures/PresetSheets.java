@@ -6,6 +6,7 @@ import cloud.baldilorenzo.sheetsmith.annotation.ExcelSheet;
 import cloud.baldilorenzo.sheetsmith.annotation.ExcelStyle;
 import cloud.baldilorenzo.sheetsmith.style.Align;
 import cloud.baldilorenzo.sheetsmith.style.TablePreset;
+import cloud.baldilorenzo.sheetsmith.style.Toggle;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -33,7 +34,7 @@ public final class PresetSheets {
     }
 
     /** A realistic table used for the sample workbooks; takes preset and accent from the defaults. */
-    @ExcelSheet(title = "Quarterly invoices", autoFilter = true)
+    @ExcelSheet(title = "Quarterly invoices", autoFilter = Toggle.TRUE)
     @ExcelStyle(name = "money", dataFormat = "#,##0.00", align = Align.RIGHT)
     @ExcelStyle(name = "center", align = Align.CENTER)
     public record Invoice(

@@ -91,7 +91,7 @@ public final class WriterSheets {
             @ExcelColumn(header = "Day", order = 3) LocalDate day) {
     }
 
-    @ExcelSheet(title = "Report", titleStyle = "title", autoFilter = true,
+    @ExcelSheet(title = "Report", titleStyle = "title", autoFilter = Toggle.TRUE,
             header = @HeaderStyles(base = "header"))
     @ExcelStyle(name = "title", bold = Toggle.TRUE, fontSize = 14)
     @ExcelStyle(name = "header", fillColor = "#DDDDDD")
@@ -101,7 +101,7 @@ public final class WriterSheets {
             @ExcelColumn(header = "Qty", order = 3) int quantity) {
     }
 
-    @ExcelSheet(freezeHeader = false, autoSizeColumns = false)
+    @ExcelSheet(freezeHeader = Toggle.FALSE, autoSizeColumns = Toggle.FALSE)
     public record Plain(@ExcelColumn(header = "Value", order = 1) String value) {
     }
 
@@ -188,18 +188,18 @@ public final class WriterSheets {
     }
 
     /** Many rows of links: no automatic sizing, to keep the limit tests fast. */
-    @ExcelSheet(freezeHeader = false, autoSizeColumns = false)
+    @ExcelSheet(freezeHeader = Toggle.FALSE, autoSizeColumns = Toggle.FALSE)
     public record ManyLinks(@ExcelColumn(header = "Link", order = 1, width = 40) Hyperlink link) {
     }
 
-    @ExcelSheet(freezeHeader = false, autoSizeColumns = false)
+    @ExcelSheet(freezeHeader = Toggle.FALSE, autoSizeColumns = Toggle.FALSE)
     public record TwoLinkColumns(
             @ExcelColumn(header = "First", order = 1, width = 40) Hyperlink first,
             @ExcelColumn(header = "Second", order = 2, width = 40) Hyperlink second) {
     }
 
     /** A link column, possibly null, next to a column whose converter writes the link as text. */
-    @ExcelSheet(freezeHeader = false, autoSizeColumns = false)
+    @ExcelSheet(freezeHeader = Toggle.FALSE, autoSizeColumns = Toggle.FALSE)
     public record LinksAndText(
             @ExcelColumn(header = "Link", order = 1, width = 40) Hyperlink link,
             @ExcelColumn(header = "Text", order = 2, width = 40, converter = UpperDescription.class) Hyperlink text) {

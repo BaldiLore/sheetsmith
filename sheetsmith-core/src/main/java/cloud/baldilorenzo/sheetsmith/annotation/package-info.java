@@ -4,6 +4,13 @@
  * A <em>sheet class</em> is annotated with {@link cloud.baldilorenzo.sheetsmith.annotation.ExcelSheet} and describes
  * one table. Each of its fields annotated with {@link cloud.baldilorenzo.sheetsmith.annotation.ExcelColumn} is a
  * <em>column</em>; other fields are ignored. The look of the table is described with named styles and slots.
+ * <p>
+ * Two kinds of classes share configuration between sheet classes. A <em>style sheet</em>, annotated with
+ * {@link cloud.baldilorenzo.sheetsmith.annotation.ExcelStyleSheet}, shares named styles. A <em>sheet template</em>,
+ * annotated with {@link cloud.baldilorenzo.sheetsmith.annotation.ExcelSheetTemplate}, shares the rest of the sheet
+ * configuration: preset, accent colour, style sheets, title style, layout options, outer border and slots. A sheet
+ * class references a template with {@link cloud.baldilorenzo.sheetsmith.annotation.ExcelSheet#template()}, and
+ * every attribute it sets itself wins over the template.
  *
  * <h2>Named styles and slots</h2>
  * A <em>named style</em> is a set of formatting attributes declared once with
@@ -82,12 +89,14 @@
  * column slot, a column slot or a column header style that sets a border side overrides the frame on that side.
  *
  * <h2 id="presets">Presets</h2>
- * A preset, chosen with {@link cloud.baldilorenzo.sheetsmith.annotation.ExcelSheet#preset()} or the application
- * defaults, generates title, header and body styles from one accent colour; the families are described in
+ * A preset, chosen with {@link cloud.baldilorenzo.sheetsmith.annotation.ExcelSheet#preset()}, with
+ * {@link cloud.baldilorenzo.sheetsmith.annotation.ExcelSheetTemplate#preset()} or with the application defaults,
+ * generates title, header and body styles from one accent colour; the families are described in
  * {@link cloud.baldilorenzo.sheetsmith.style.TablePreset}. The preset is the lowest level of every cascade, so any
  * declared style overrides it attribute by attribute.
  *
  * @see cloud.baldilorenzo.sheetsmith.annotation.ExcelSheet
+ * @see cloud.baldilorenzo.sheetsmith.annotation.ExcelSheetTemplate
  * @see cloud.baldilorenzo.sheetsmith.annotation.ExcelStyle
  */
 package cloud.baldilorenzo.sheetsmith.annotation;

@@ -21,9 +21,10 @@ import java.util.stream.Collectors;
  * </pre>
  *
  * <h2 id="validation-rules">Validation rules</h2>
- * Rules V-01 to V-09 and V-13 to V-17 are checked on the annotations of a sheet class, rules V-10 to V-12 when a
- * converter is bound to each column, and rules V-18 to V-20 on the input of
- * {@link Sheetsmith#generate(java.util.List)}.
+ * Rules V-01 to V-09, V-13 to V-17 and V-21 to V-25 are checked on the annotations of a sheet class and of the
+ * sheet template it references, rules V-10 to V-12 when a converter is bound to each column, and rules V-18 to V-20
+ * on the input of {@link Sheetsmith#generate(java.util.List)}. A sheet template is also checked on its own, with
+ * rules V-06, V-08, V-09, V-13 and V-23 to V-25; its errors name the template class.
  * <table class="striped">
  *   <caption>Validation rules</caption>
  *   <thead>
@@ -31,7 +32,9 @@ import java.util.stream.Collectors;
  *   </thead>
  *   <tbody>
  *     <tr><th scope="row">V-01</th><td>The class is annotated with
- *         {@link cloud.baldilorenzo.sheetsmith.annotation.ExcelSheet}.</td><td>Annotate the class.</td></tr>
+ *         {@link cloud.baldilorenzo.sheetsmith.annotation.ExcelSheet}, or, for
+ *         {@link Sheetsmith#validate(Class)}, with
+ *         {@link cloud.baldilorenzo.sheetsmith.annotation.ExcelSheetTemplate}.</td><td>Annotate the class.</td></tr>
  *     <tr><th scope="row">V-02</th><td>The class has at least one field annotated with
  *         {@link cloud.baldilorenzo.sheetsmith.annotation.ExcelColumn}.</td>
  *         <td>Annotate at least one field.</td></tr>
@@ -79,6 +82,21 @@ import java.util.stream.Collectors;
  *         <td>Choose a valid name: sheetsmith never shortens or cleans names.</td></tr>
  *     <tr><th scope="row">V-20</th><td>Sheet names are unique within the workbook, ignoring case.</td>
  *         <td>Rename one of the sheets.</td></tr>
+ *     <tr><th scope="row">V-21</th><td>The class referenced by {@code template} is annotated with
+ *         {@link cloud.baldilorenzo.sheetsmith.annotation.ExcelSheetTemplate}.</td>
+ *         <td>Annotate the template class, or reference another class.</td></tr>
+ *     <tr><th scope="row">V-22</th><td>A sheet class that references a template leaves {@code preset} unset.</td>
+ *         <td>Remove the preset from the sheet class, or declare it in the template.</td></tr>
+ *     <tr><th scope="row">V-23</th><td>A template class is not also annotated with
+ *         {@link cloud.baldilorenzo.sheetsmith.annotation.ExcelSheet} or
+ *         {@link cloud.baldilorenzo.sheetsmith.annotation.ExcelStyleSheet}.</td>
+ *         <td>Declare the template on a separate class.</td></tr>
+ *     <tr><th scope="row">V-24</th><td>A template class declares no
+ *         {@link cloud.baldilorenzo.sheetsmith.annotation.ExcelStyle}.</td>
+ *         <td>Move the styles to a style sheet and reference it with {@code styleSheets}.</td></tr>
+ *     <tr><th scope="row">V-25</th><td>A template class has no field annotated with
+ *         {@link cloud.baldilorenzo.sheetsmith.annotation.ExcelColumn}, inherited fields included.</td>
+ *         <td>Move the columns to the sheet classes.</td></tr>
  *   </tbody>
  * </table>
  *

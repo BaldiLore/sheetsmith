@@ -23,7 +23,8 @@ import java.lang.annotation.Target;
  * must be unique within one declaring class, whether the sheet class or a style sheet (rule V-07); two style sheets
  * referenced by the same sheet class must not declare the same name (rule V-08). A style declared on the sheet
  * class replaces a style with the same name coming from a style sheet. Named styles are not inherited from
- * superclasses.
+ * superclasses. A sheet template, annotated with {@link ExcelSheetTemplate}, cannot declare named styles (rule
+ * V-24): it references style sheets instead.
  * <p>
  * A style takes effect through the slots that reference it: {@link ExcelSheet#titleStyle()},
  * {@link ExcelSheet#header()}, {@link ExcelSheet#body()}, {@link ExcelColumn#headerStyle()} and

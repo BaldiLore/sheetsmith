@@ -12,7 +12,7 @@
  *   <li>{@link cloud.baldilorenzo.sheetsmith.autoconfigure.SpringConverterFactory}: creates field converters from
  *       the application context;</li>
  *   <li>{@link cloud.baldilorenzo.sheetsmith.autoconfigure.SheetsmithStartupValidator}: validates the sheet
- *       classes of the configured packages at startup.</li>
+ *       classes and sheet templates of the configured packages at startup.</li>
  * </ul>
  */
 package cloud.baldilorenzo.sheetsmith.autoconfigure;
