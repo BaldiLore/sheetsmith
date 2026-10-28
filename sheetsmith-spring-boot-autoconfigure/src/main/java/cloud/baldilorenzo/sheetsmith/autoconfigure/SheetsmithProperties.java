@@ -42,7 +42,7 @@ import java.util.List;
  *                    the name of an Apache POI IndexedColors constant. Default #4472C4. In YAML, quote the value,
  *                    because # starts a comment. An invalid colour stops the application at startup.
  * @param document    Properties recorded in every generated file: author and application.
- * @param validation  Startup validation of sheet classes.
+ * @param validation  Startup validation of sheet classes and sheet templates.
  * @see SheetsmithAutoConfiguration
  * @since 1.0.0
  */
@@ -130,12 +130,13 @@ public record SheetsmithProperties(
     }
 
     /**
-     * Startup validation of sheet classes.
+     * Startup validation of sheet classes and sheet templates.
      *
      * @param packages Packages scanned at startup, subpackages included. Every type annotated directly with the
-     *                 annotation @ExcelSheet is validated, abstract and nested classes included; annotation types
-     *                 and types only meta-annotated with @ExcelSheet are not. Any error stops the application with
-     *                 one exception listing all of them. Default empty, which disables the validation.
+     *                 annotation @ExcelSheet or @ExcelSheetTemplate is validated, abstract and nested classes
+     *                 included; annotation types and types only meta-annotated with them are not. A template is
+     *                 validated even when no sheet class references it. Any error stops the application with one
+     *                 exception listing all of them, each once. Default empty, which disables the validation.
      * @since 1.0.0
      */
     public record Validation(@DefaultValue List<String> packages) {

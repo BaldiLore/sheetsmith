@@ -12,7 +12,7 @@ body:
     id: version
     attributes:
       label: sheetsmith version
-      placeholder: "1.0.0"
+      placeholder: "1.1.0"
     validations:
       required: true
 

@@ -9,8 +9,9 @@ import java.util.Objects;
  * Each error names the violated validation rule, the class and the element involved, and describes the problem.
  * The rules are listed in {@link SheetsmithConfigurationException}.
  *
- * @param code    the id of the violated validation rule, from {@code V-01} to {@code V-20}
- * @param type    the class the error refers to: the sheet class, or the style sheet that declares the faulty style;
+ * @param code    the id of the violated validation rule, from {@code V-01} to {@code V-25}
+ * @param type    the class the error refers to: the sheet class, the sheet template, or the style sheet that
+ *                declares the faulty style;
  *                null for errors on the input of {@link Sheetsmith#generate(java.util.List)}, rules V-18 to V-20
  * @param element the element involved, such as a field name, {@code @ExcelSheet} or
  *                {@code @ExcelStyle(header)}; empty when the error concerns the class or the input as a whole

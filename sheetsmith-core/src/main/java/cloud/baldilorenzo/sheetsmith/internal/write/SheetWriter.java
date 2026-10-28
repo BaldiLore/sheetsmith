@@ -13,14 +13,19 @@ import cloud.baldilorenzo.sheetsmith.internal.style.StyleAttributes;
 import cloud.baldilorenzo.sheetsmith.internal.style.StyleCache;
 import cloud.baldilorenzo.sheetsmith.internal.style.StyleResolver;
 import cloud.baldilorenzo.sheetsmith.style.TablePreset;
+import cloud.baldilorenzo.sheetsmith.style.Underline;
+import org.apache.poi.common.usermodel.HyperlinkType;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.Hyperlink;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 
+import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -38,8 +43,17 @@ public final class SheetWriter {
     /** Maximum number of characters of an Excel text cell. */
     static final int MAX_TEXT_LENGTH = 32_767;
 
+    /** Maximum number of hyperlinks of an Excel sheet. */
+    static final int MAX_HYPERLINKS = 65_530;
+
     /** Maximum column width, in characters. */
     static final int MAX_WIDTH = 255;
+
+    /**
+     * Font colour of the cells with a link: the hyperlink colour of the default Office theme, the one Excel gives to
+     * the links typed in a cell.
+     */
+    static final String HYPERLINK_COLOR = "#0563C1";
 
     private final SheetsmithDefaults defaults;
     private final ColumnSizer columnSizer;
@@ -71,8 +85,11 @@ public final class SheetWriter {
         new Run(workbook, styles, input).write();
     }
 
-    /** Kind of the value written to a data cell, which selects its default format; null values are blank. */
-    private enum ValueKind { TEXT, NUMERIC, BOOLEAN, DATE, DATE_TIME, BLANK }
+    /**
+     * Kind of the value written to a data cell, which selects its default format and appearance; null values are
+     * blank, links are {@code HYPERLINK}.
+     */
+    private enum ValueKind { TEXT, NUMERIC, BOOLEAN, DATE, DATE_TIME, BLANK, HYPERLINK }
 
     /**
      * Everything the final style of a data cell depends on. First and last column follow from the column index.
@@ -96,6 +113,7 @@ public final class SheetWriter {
     private final class Run {
 
         private final StyleCache styles;
+        private final CreationHelper creationHelper;
         private final String name;
         private final SheetMetadata metadata;
         private final List<SheetBinding.Column> columns;
@@ -106,9 +124,12 @@ public final class SheetWriter {
         /** Final style of the data cells per column, role and value kind: the cascade runs once per key. */
         private final Map<DataStyleKey, CellStyle> dataStyles = new HashMap<>();
         private DataFormatter formatter;
+        /** Hyperlinks written so far in the sheet, over all its columns. */
+        private int hyperlinks;
 
         Run(Workbook workbook, StyleCache styles, WritableSheet input) {
             this.styles = styles;
+            this.creationHelper = workbook.getCreationHelper();
             this.name = input.name();
             this.metadata = input.binding().metadata();
             this.columns = input.binding().columns();
@@ -202,14 +223,16 @@ public final class SheetWriter {
 
             ValueKind kind = ValueKind.BLANK;
             if (converted instanceof CellValue.Text text) {
-                String string = text.value();
-                if (string.length() > MAX_TEXT_LENGTH) {
-                    throw new SheetsmithGenerationException("text of " + string.length()
-                            + " characters exceeds the Excel limit of " + MAX_TEXT_LENGTH, name, i,
-                            definition.fieldName(), null);
-                }
-                cell.setCellValue(string);
+                cell.setCellValue(checkedText(text.value(), i, definition));
                 kind = ValueKind.TEXT;
+            } else if (converted instanceof CellValue.Link link) {
+                cell.setCellValue(checkedText(link.value().text(), i, definition));
+                if (++hyperlinks > MAX_HYPERLINKS) {
+                    throw new SheetsmithGenerationException("hyperlink " + hyperlinks + " exceeds the Excel limit of "
+                            + MAX_HYPERLINKS + " hyperlinks in a sheet", name, i, definition.fieldName(), null);
+                }
+                addHyperlink(cell, link, i, definition);
+                kind = ValueKind.HYPERLINK;
             } else if (converted instanceof CellValue.Numeric numeric) {
                 cell.setCellValue(numeric.value());
                 kind = ValueKind.NUMERIC;
@@ -226,12 +249,45 @@ public final class SheetWriter {
             cell.setCellStyle(dataStyle(j, definition, role, kind));
         }
 
-        /** The final style of a data cell: cascade, default format for the value kind, cache lookup, memoised. */
+        /** Returns the text of a cell, failing when it exceeds the Excel limit. */
+        private String checkedText(String text, int i, ColumnMetadata definition) {
+            if (text.length() > MAX_TEXT_LENGTH) {
+                throw new SheetsmithGenerationException("text of " + text.length()
+                        + " characters exceeds the Excel limit of " + MAX_TEXT_LENGTH, name, i,
+                        definition.fieldName(), null);
+            }
+            return text;
+        }
+
+        /** Links a cell whose text is already written; the address is passed to Excel in its ASCII form. */
+        private void addHyperlink(Cell cell, CellValue.Link link, int i, ColumnMetadata definition) {
+            URI address = link.value().address();
+            HyperlinkType type = "mailto".equalsIgnoreCase(address.getScheme())
+                    ? HyperlinkType.EMAIL
+                    : HyperlinkType.URL;
+            try {
+                Hyperlink hyperlink = creationHelper.createHyperlink(type);
+                hyperlink.setAddress(address.toASCIIString());
+                cell.setHyperlink(hyperlink);
+            } catch (RuntimeException e) {
+                throw new SheetsmithGenerationException("cannot add the hyperlink " + address + ": " + e,
+                        name, i, definition.fieldName(), e);
+            }
+        }
+
+        /**
+         * The final style of a data cell: cascade, default format and link appearance for the value kind, cache
+         * lookup, memoised.
+         */
         private CellStyle dataStyle(int j, ColumnMetadata column, CellRole role, ValueKind kind) {
             DataStyleKey key = new DataStyleKey(j, role.firstRow(), role.lastRow(), role.even(), kind);
             CellStyle style = dataStyles.get(key);
             if (style == null) {
-                style = styles.get(withDefaultFormat(resolver.body(column, role), defaultFormat(kind)));
+                StyleAttributes resolved = resolver.body(column, role);
+                if (kind == ValueKind.HYPERLINK) {
+                    resolved = withHyperlinkLook(resolved);
+                }
+                style = styles.get(withDefaultFormat(resolved, defaultFormat(kind)));
                 dataStyles.put(key, style);
             }
             return style;
@@ -298,6 +354,21 @@ public final class SheetWriter {
                 return style;
             }
             return style.toBuilder().dataFormat(format).build();
+        }
+
+        /** Adds the underline and the colour of a link, each only when the cascade leaves it unset. */
+        private StyleAttributes withHyperlinkLook(StyleAttributes style) {
+            if (style.underline() != null && style.fontColor() != null) {
+                return style;
+            }
+            StyleAttributes.Builder builder = style.toBuilder();
+            if (style.underline() == null) {
+                builder.underline(Underline.SINGLE);
+            }
+            if (style.fontColor() == null) {
+                builder.fontColor(HYPERLINK_COLOR);
+            }
+            return builder.build();
         }
 
         /** Conversion context of one cell. */

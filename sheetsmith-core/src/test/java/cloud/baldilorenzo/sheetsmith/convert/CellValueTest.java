@@ -1,5 +1,6 @@
 package cloud.baldilorenzo.sheetsmith.convert;
 
+import cloud.baldilorenzo.sheetsmith.value.Hyperlink;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -21,6 +22,22 @@ class CellValueTest {
     }
 
     @Test
+    void linkFactoryCreatesALinkWithTheSameHyperlink() {
+        Hyperlink hyperlink = Hyperlink.of("https://example.com", "Example");
+
+        assertThat(CellValue.link(hyperlink)).isInstanceOf(CellValue.Link.class)
+                .extracting(value -> ((CellValue.Link) value).value()).isSameAs(hyperlink);
+    }
+
+    @Test
+    void linksWithEqualHyperlinksAreEqual() {
+        assertThat(CellValue.link(Hyperlink.of("https://example.com", "Example")))
+                .isEqualTo(new CellValue.Link(Hyperlink.of("https://example.com", "Example")))
+                .hasSameHashCodeAs(new CellValue.Link(Hyperlink.of("https://example.com", "Example")))
+                .isNotEqualTo(CellValue.link(Hyperlink.of("https://example.com")));
+    }
+
+    @Test
     void blankIsASingleton() {
         assertThat(CellValue.blank()).isInstanceOf(CellValue.Blank.class).isSameAs(CellValue.blank());
     }
@@ -30,5 +47,6 @@ class CellValueTest {
         assertThatNullPointerException().isThrownBy(() -> CellValue.text(null));
         assertThatNullPointerException().isThrownBy(() -> CellValue.date(null));
         assertThatNullPointerException().isThrownBy(() -> CellValue.dateTime(null));
+        assertThatNullPointerException().isThrownBy(() -> CellValue.link(null));
     }
 }

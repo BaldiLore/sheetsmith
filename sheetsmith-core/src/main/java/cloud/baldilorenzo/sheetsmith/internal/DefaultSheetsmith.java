@@ -6,6 +6,8 @@ import cloud.baldilorenzo.sheetsmith.SheetData;
 import cloud.baldilorenzo.sheetsmith.Sheetsmith;
 import cloud.baldilorenzo.sheetsmith.SheetsmithConfigurationException;
 import cloud.baldilorenzo.sheetsmith.SheetsmithDefaults;
+import cloud.baldilorenzo.sheetsmith.annotation.ExcelSheet;
+import cloud.baldilorenzo.sheetsmith.annotation.ExcelSheetTemplate;
 import cloud.baldilorenzo.sheetsmith.convert.CellConverter;
 import cloud.baldilorenzo.sheetsmith.convert.CellConverterFactory;
 import cloud.baldilorenzo.sheetsmith.internal.convert.ConverterBinder;
@@ -26,6 +28,7 @@ import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -69,7 +72,8 @@ public final class DefaultSheetsmith implements Sheetsmith {
     public void generate(List<SheetData<?>> sheets, OutputStream out) {
         Objects.requireNonNull(sheets, "sheets");
         Objects.requireNonNull(out, "out");
-        List<ConfigurationError> errors = new ArrayList<>(inputErrors(sheets));
+        // several sheet classes can report the same errors of a shared template or style sheet: each is kept once
+        LinkedHashSet<ConfigurationError> errors = new LinkedHashSet<>(inputErrors(sheets));
 
         Map<Class<?>, SheetBinding> bound = new HashMap<>();
         for (SheetData<?> sheet : sheets) {
@@ -84,7 +88,7 @@ public final class DefaultSheetsmith implements Sheetsmith {
             }
         }
         if (!errors.isEmpty()) {
-            throw new SheetsmithConfigurationException(errors);
+            throw new SheetsmithConfigurationException(List.copyOf(errors));
         }
 
         List<WritableSheet> writable = new ArrayList<>(sheets.size());
@@ -111,10 +115,16 @@ public final class DefaultSheetsmith implements Sheetsmith {
 
     @Override
     public void validate(Class<?> type) {
-        List<ConfigurationError> errors = errors(Objects.requireNonNull(type, "type"));
+        Objects.requireNonNull(type, "type");
+        List<ConfigurationError> errors = isTemplate(type) ? extractor.inspectTemplate(type).errors() : errors(type);
         if (!errors.isEmpty()) {
             throw new SheetsmithConfigurationException(errors);
         }
+    }
+
+    /** Whether a class is a sheet template only: a class that is also a sheet class is validated as one. */
+    private static boolean isTemplate(Class<?> type) {
+        return type.isAnnotationPresent(ExcelSheetTemplate.class) && !type.isAnnotationPresent(ExcelSheet.class);
     }
 
     /** Extraction and binding errors of a class, together. */

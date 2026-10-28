@@ -24,14 +24,14 @@ Add the starter with Maven:
 <dependency>
     <groupId>cloud.baldilorenzo.sheetsmith</groupId>
     <artifactId>sheetsmith-spring-boot-starter</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 
 or with Gradle:
 
 ```kotlin
-implementation("cloud.baldilorenzo.sheetsmith:sheetsmith-spring-boot-starter:1.0.0")
+implementation("cloud.baldilorenzo.sheetsmith:sheetsmith-spring-boot-starter:1.1.0")
 ```
 
 Describe the sheet:

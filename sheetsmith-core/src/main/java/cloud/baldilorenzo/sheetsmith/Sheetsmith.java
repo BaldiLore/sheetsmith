@@ -54,19 +54,22 @@ public interface Sheetsmith {
      * <p>
      * The input and every sheet class are validated before anything is written: the sheet list must not be empty
      * (rule V-18), sheet names must be valid (V-19) and unique ignoring case (V-20), and every sheet class must
-     * satisfy rules V-01 to V-17. The errors of the input and of all the classes are reported together in one
-     * {@link SheetsmithConfigurationException}, and no workbook is written. A class that fails validation is not
-     * cached and is rejected at every call until it is fixed.
+     * satisfy rules V-01 to V-17 and V-21 to V-25, the template it references included. The errors of the input
+     * and of all the classes are reported together in one {@link SheetsmithConfigurationException}, each once
+     * even when several sheet classes share an invalid template or style sheet, and no workbook is written. A
+     * class that fails validation is not cached and is rejected at every call until it is fixed.
      * <p>
      * Problems in the data are found while writing and reported as a {@link SheetsmithGenerationException} naming
      * the sheet, the 1-based data row and, where relevant, the field: a null element in a data list, a getter or
-     * converter that throws, a converter that returns null, a text longer than 32,767 characters, or more rows
-     * than Excel allows in a sheet (1,048,576, title and header included).
+     * converter that throws, a converter that returns null, a text longer than 32,767 characters (the text shown
+     * by a link included), more rows than Excel allows in a sheet (1,048,576, title and header included), or more
+     * than 65,530 links in a sheet.
      *
      * @param sheets the sheets, in workbook order; not null and without null elements
      * @return the content of the xlsx file
      * @throws SheetsmithConfigurationException if the input violates rules V-18 to V-20 or a sheet class violates
-     *                                          any of rules V-01 to V-17; every error found is listed
+     *                                          any of rules V-01 to V-17 and V-21 to V-25; every error found is
+     *                                          listed
      * @throws SheetsmithGenerationException    if an element or a value of the data cannot be written
      * @throws UncheckedIOException             if serialising the workbook fails. It is an infrastructure error, not
      *                                          a configuration or data error, so it is not wrapped in a
@@ -99,8 +102,8 @@ public interface Sheetsmith {
      * @param sheets the sheets, in workbook order; not null and without null elements
      * @param out    the stream that receives the file, not null; flushed, never closed
      * @throws SheetsmithConfigurationException if the input violates rules V-18 to V-20 or a sheet class violates
-     *                                          any of rules V-01 to V-17; every error found is listed, and nothing
-     *                                          is written to the stream
+     *                                          any of rules V-01 to V-17 and V-21 to V-25; every error found is
+     *                                          listed, and nothing is written to the stream
      * @throws SheetsmithGenerationException    if an element or a value of the data cannot be written; nothing is
      *                                          written to the stream
      * @throws UncheckedIOException             if serialising the workbook fails, including a failure of the stream
@@ -116,17 +119,24 @@ public interface Sheetsmith {
     void generate(List<SheetData<?>> sheets, OutputStream out);
 
     /**
-     * Validates a sheet class without generating anything.
+     * Validates a sheet class or a sheet template without generating anything.
      * <p>
-     * Runs every check that {@link #generate(List)} runs on a class: the annotations (rules V-01 to V-09 and V-13
-     * to V-17) and the binding of a converter to each column (V-10 to V-12), using the application converters and
-     * the converter factory of this instance. All the errors of the class are reported together.
+     * For a sheet class, runs every check that {@link #generate(List)} runs on a class: the annotations (rules V-01
+     * to V-09, V-13 to V-17 and V-21 to V-25, the template the class references included) and the binding of a
+     * converter to each column (V-10 to V-12), using the application converters and the converter factory of this
+     * instance. All the errors of the class are reported together.
+     * <p>
+     * Since 1.1.0, the class can also be a sheet template, annotated with
+     * {@link cloud.baldilorenzo.sheetsmith.annotation.ExcelSheetTemplate}: the template is validated on its own,
+     * with the checks that apply to it for every sheet class that references it (rules V-06, V-08, V-09, V-13 and
+     * V-23 to V-25). A template cannot be passed to {@link #generate(List)}. A class annotated with neither
+     * annotation violates rule V-01.
      * <p>
      * Intended for startup validation and unit tests, so that a mistake in a sheet class fails the build or the
      * startup instead of the first generation. Because converter binding depends on the application converters,
      * validate with an instance configured like the one that generates the files.
      *
-     * @param type the sheet class, not null
+     * @param type the sheet class or the sheet template, not null
      * @throws SheetsmithConfigurationException listing every error of the class
      * @throws NullPointerException             if {@code type} is null
      * @see SheetsmithConfigurationException
@@ -171,7 +181,8 @@ public interface Sheetsmith {
          * registered for a closer supertype of the column type. Primitive types are registered as their
          * wrappers, so a converter registered for {@code double.class} or {@code Double.class} applies to both
          * {@code double} and {@code Double} fields. A converter registered for a type that has a built-in
-         * converter, such as {@code Boolean}, {@code LocalDate} or {@code Enum}, replaces the built-in behaviour.
+         * converter, such as {@code Boolean}, {@code LocalDate}, {@code UUID}
+         * or {@code Enum}, replaces the built-in behaviour.
          * <p>
          * The instance built calls the converter from several threads when it generates concurrently, so the
          * converter must be thread-safe.

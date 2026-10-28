@@ -130,6 +130,11 @@ public final class MetadataValidator {
         static final String TITLE_STYLE_WITHOUT_TITLE = "V-15";
         static final String BLANK_STYLE_NAME = "V-16";
         static final String INACCESSIBLE_VALUE = "V-17";
+        static final String NOT_A_TEMPLATE = "V-21";
+        static final String PRESET_WITH_TEMPLATE = "V-22";
+        static final String TEMPLATE_ON_OTHER_CLASS = "V-23";
+        static final String STYLE_ON_TEMPLATE = "V-24";
+        static final String COLUMN_ON_TEMPLATE = "V-25";
 
         private Rules() {
         }

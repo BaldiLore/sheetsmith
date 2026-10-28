@@ -1,6 +1,7 @@
 package cloud.baldilorenzo.sheetsmith.fixtures;
 
 import cloud.baldilorenzo.sheetsmith.annotation.BodyStyles;
+import cloud.baldilorenzo.sheetsmith.annotation.ColumnStyles;
 import cloud.baldilorenzo.sheetsmith.annotation.ExcelColumn;
 import cloud.baldilorenzo.sheetsmith.annotation.ExcelSheet;
 import cloud.baldilorenzo.sheetsmith.annotation.ExcelStyle;
@@ -9,13 +10,30 @@ import cloud.baldilorenzo.sheetsmith.convert.CellConverter;
 import cloud.baldilorenzo.sheetsmith.convert.CellValue;
 import cloud.baldilorenzo.sheetsmith.convert.ConversionContext;
 import cloud.baldilorenzo.sheetsmith.style.Border;
+import cloud.baldilorenzo.sheetsmith.style.TablePreset;
 import cloud.baldilorenzo.sheetsmith.style.Toggle;
+import cloud.baldilorenzo.sheetsmith.style.Underline;
+import cloud.baldilorenzo.sheetsmith.value.Hyperlink;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.URI;
+import java.net.URL;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Year;
+import java.time.YearMonth;
+import java.time.ZoneId;
+import java.util.Currency;
 import java.util.Date;
+import java.util.Locale;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
+import java.util.OptionalLong;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /** Exported classes used by the converter and writer tests. */
 public final class WriterSheets {
@@ -46,13 +64,34 @@ public final class WriterSheets {
 
     @ExcelSheet(body = @BodyStyles(base = "grid"))
     @ExcelStyle(name = "grid", border = Border.THIN)
+    public record AdditionalTypes(
+            @ExcelColumn(header = "UUID", order = 1) UUID id,
+            @ExcelColumn(header = "URI", order = 2) URI uri,
+            @ExcelColumn(header = "URL", order = 3) URL url,
+            @ExcelColumn(header = "File", order = 4) File file,
+            @ExcelColumn(header = "Currency", order = 5) Currency currency,
+            @ExcelColumn(header = "Zone", order = 6) ZoneId zone,
+            @ExcelColumn(header = "Locale", order = 7) Locale locale,
+            @ExcelColumn(header = "Year-month", order = 8) YearMonth yearMonth,
+            @ExcelColumn(header = "Year", order = 9) Year year,
+            @ExcelColumn(header = "Atomic flag", order = 10) AtomicBoolean atomicFlag,
+            @ExcelColumn(header = "Optional int", order = 11) OptionalInt optionalInt,
+            @ExcelColumn(header = "Optional long", order = 12) OptionalLong optionalLong,
+            @ExcelColumn(header = "Optional double", order = 13) OptionalDouble optionalDouble,
+            @ExcelColumn(header = "SQL date", order = 14) java.sql.Date sqlDate,
+            @ExcelColumn(header = "Timestamp", order = 15) Timestamp timestamp,
+            @ExcelColumn(header = "Formatted year", order = 16, format = "0") Year formattedYear) {
+    }
+
+    @ExcelSheet(body = @BodyStyles(base = "grid"))
+    @ExcelStyle(name = "grid", border = Border.THIN)
     public record Nullable(
             @ExcelColumn(header = "Name", order = 1) String name,
             @ExcelColumn(header = "Count", order = 2) Integer count,
             @ExcelColumn(header = "Day", order = 3) LocalDate day) {
     }
 
-    @ExcelSheet(title = "Report", titleStyle = "title", autoFilter = true,
+    @ExcelSheet(title = "Report", titleStyle = "title", autoFilter = Toggle.TRUE,
             header = @HeaderStyles(base = "header"))
     @ExcelStyle(name = "title", bold = Toggle.TRUE, fontSize = 14)
     @ExcelStyle(name = "header", fillColor = "#DDDDDD")
@@ -62,7 +101,7 @@ public final class WriterSheets {
             @ExcelColumn(header = "Qty", order = 3) int quantity) {
     }
 
-    @ExcelSheet(freezeHeader = false, autoSizeColumns = false)
+    @ExcelSheet(freezeHeader = Toggle.FALSE, autoSizeColumns = Toggle.FALSE)
     public record Plain(@ExcelColumn(header = "Value", order = 1) String value) {
     }
 
@@ -120,6 +159,87 @@ public final class WriterSheets {
         }
     }
 
+    // ---- hyperlinks ----
+
+    @ExcelSheet
+    public record Links(
+            @ExcelColumn(header = "Name", order = 1) String name,
+            @ExcelColumn(header = "Link", order = 2) Hyperlink link) {
+    }
+
+    @ExcelSheet(body = @BodyStyles(base = "grid"))
+    @ExcelStyle(name = "grid", border = Border.THIN)
+    public record GridLinks(
+            @ExcelColumn(header = "Name", order = 1) String name,
+            @ExcelColumn(header = "Link", order = 2) Hyperlink link) {
+    }
+
+    /** Writes the description in upper case as text: the cells get no link. */
+    public static class UpperDescription implements CellConverter<Hyperlink> {
+        @Override
+        public CellValue convert(Hyperlink value, ConversionContext context) {
+            return CellValue.text(value.text().toUpperCase(Locale.ROOT));
+        }
+    }
+
+    @ExcelSheet
+    public record ConvertedLinks(
+            @ExcelColumn(header = "Link", order = 1, converter = UpperDescription.class) Hyperlink link) {
+    }
+
+    /** Many rows of links: no automatic sizing, to keep the limit tests fast. */
+    @ExcelSheet(freezeHeader = Toggle.FALSE, autoSizeColumns = Toggle.FALSE)
+    public record ManyLinks(@ExcelColumn(header = "Link", order = 1, width = 40) Hyperlink link) {
+    }
+
+    @ExcelSheet(freezeHeader = Toggle.FALSE, autoSizeColumns = Toggle.FALSE)
+    public record TwoLinkColumns(
+            @ExcelColumn(header = "First", order = 1, width = 40) Hyperlink first,
+            @ExcelColumn(header = "Second", order = 2, width = 40) Hyperlink second) {
+    }
+
+    /** A link column, possibly null, next to a column whose converter writes the link as text. */
+    @ExcelSheet(freezeHeader = Toggle.FALSE, autoSizeColumns = Toggle.FALSE)
+    public record LinksAndText(
+            @ExcelColumn(header = "Link", order = 1, width = 40) Hyperlink link,
+            @ExcelColumn(header = "Text", order = 2, width = 40, converter = UpperDescription.class) Hyperlink text) {
+    }
+
+    /** Keeps the link and replaces its description. */
+    public static class RelabelledLink implements CellConverter<Hyperlink> {
+        @Override
+        public CellValue convert(Hyperlink value, ConversionContext context) {
+            return CellValue.link(Hyperlink.of(value.address(), "Open " + value.text()));
+        }
+    }
+
+    @ExcelSheet
+    public record RelabelledLinks(
+            @ExcelColumn(header = "Link", order = 1, converter = RelabelledLink.class) Hyperlink link) {
+    }
+
+    /** A domain type written as a link by an application converter. */
+    public record OrderNumber(String value) {
+    }
+
+    @ExcelSheet
+    public record Orders(
+            @ExcelColumn(header = "Customer", order = 1) String customer,
+            @ExcelColumn(header = "Order", order = 2) OrderNumber order) {
+    }
+
+    @ExcelSheet
+    @ExcelStyle(name = "plain", fontColor = "#C00000", underline = Underline.NONE)
+    public record PlainStyledLinks(
+            @ExcelColumn(header = "Link", order = 1, styles = @ColumnStyles(base = "plain")) Hyperlink link) {
+    }
+
+    @ExcelSheet(preset = TablePreset.DARK)
+    public record DarkLinks(
+            @ExcelColumn(header = "Name", order = 1) String name,
+            @ExcelColumn(header = "Link", order = 2) Hyperlink link) {
+    }
+
     // ---- binding ----
 
     /** Handles any type: its type argument cannot be determined from the class declaration. */
@@ -162,6 +282,18 @@ public final class WriterSheets {
 
     @ExcelSheet
     public record V10Unsupported(@ExcelColumn(header = "When", order = 1) Date when) {
+    }
+
+    /** Only the declared type counts: {@code legacy} may hold a {@code Timestamp} and still has no converter. */
+    @ExcelSheet
+    public record V10DeclaredType(
+            @ExcelColumn(header = "Legacy", order = 1) Date legacy,
+            @ExcelColumn(header = "Stamp", order = 2) Timestamp stamp) {
+    }
+
+    /** Only the declared type counts: {@code link} may hold a {@code Hyperlink} and still has no converter. */
+    @ExcelSheet
+    public record V10ObjectLink(@ExcelColumn(header = "Link", order = 1) Object link) {
     }
 
     @ExcelSheet

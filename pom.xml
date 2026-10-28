@@ -12,7 +12,7 @@
 
     <groupId>cloud.baldilorenzo.sheetsmith</groupId>
     <artifactId>sheetsmith-parent</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <packaging>pom</packaging>
 
     <name>sheetsmith</name>
@@ -65,7 +65,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <!-- Dependencies -->
-        <spring-boot.version>4.1.1</spring-boot.version>
+        <spring-boot.version>4.1.2</spring-boot.version>
         <poi.version>5.5.1</poi.version>
 
         <!-- Plugins -->

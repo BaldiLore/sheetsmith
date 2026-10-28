@@ -35,7 +35,6 @@ class AnnotationContractTest {
 
     private static final String STRING = String.class.getName();
     private static final String INT = int.class.getName();
-    private static final String BOOLEAN = boolean.class.getName();
 
     @Test
     void excelSheetHasTheDocumentedAttributes() {
@@ -45,13 +44,14 @@ class AnnotationContractTest {
                 attr("preset", TablePreset.class.getName(), TablePreset.INHERIT),
                 attr("accentColor", STRING, ""),
                 attr("styleSheets", "java.lang.Class<?>[]", new Class<?>[0]),
-                attr("freezeHeader", BOOLEAN, true),
-                attr("autoFilter", BOOLEAN, false),
-                attr("autoSizeColumns", BOOLEAN, true),
+                attr("freezeHeader", Toggle.class.getName(), Toggle.INHERIT),
+                attr("autoFilter", Toggle.class.getName(), Toggle.INHERIT),
+                attr("autoSizeColumns", Toggle.class.getName(), Toggle.INHERIT),
                 attr("outerBorder", Border.class.getName(), Border.INHERIT),
                 attr("outerBorderColor", STRING, ""),
                 attr("header", HeaderStyles.class.getName(), new AllDefaults(HeaderStyles.class)),
-                attr("body", BodyStyles.class.getName(), new AllDefaults(BodyStyles.class)));
+                attr("body", BodyStyles.class.getName(), new AllDefaults(BodyStyles.class)),
+                attr("template", "java.lang.Class<?>", ExcelSheetTemplate.None.class));
     }
 
     @Test

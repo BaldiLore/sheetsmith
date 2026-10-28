@@ -7,6 +7,7 @@ import cloud.baldilorenzo.sheetsmith.convert.CellConverterFactory;
 import cloud.baldilorenzo.sheetsmith.convert.CellValue;
 import cloud.baldilorenzo.sheetsmith.fixtures.WriterSheets;
 import cloud.baldilorenzo.sheetsmith.internal.metadata.MetadataExtractor;
+import cloud.baldilorenzo.sheetsmith.value.Hyperlink;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -73,6 +74,32 @@ class ConverterBinderTest {
             assertThat(error).extracting(ConfigurationError::code, ConfigurationError::element)
                     .containsExactly("V-10", "when");
             assertThat(error.message()).contains("java.util.Date", "@ExcelColumn(converter = ...)");
+        });
+    }
+
+    @Test
+    void v10DependsOnTheDeclaredTypeNotOnTheRuntimeOne() {
+        assertThat(errors(binder, WriterSheets.V10DeclaredType.class)).singleElement().satisfies(error -> {
+            assertThat(error).extracting(ConfigurationError::code, ConfigurationError::element)
+                    .containsExactly("V-10", "legacy");
+            assertThat(error.message()).contains("java.util.Date");
+        });
+    }
+
+    @Test
+    void hyperlinkColumnIsBoundToTheBuiltInConverterWithoutDeclaredConverters() {
+        SheetBinding binding = binder.bind(extractor.extract(WriterSheets.Links.class));
+
+        assertThat((Object) binding.columns().get(1).converter())
+                .isSameAs(BuiltInConverters.all().get(Hyperlink.class));
+    }
+
+    @Test
+    void v10ForAnObjectFieldThatWouldHoldAHyperlink() {
+        assertThat(errors(binder, WriterSheets.V10ObjectLink.class)).singleElement().satisfies(error -> {
+            assertThat(error).extracting(ConfigurationError::code, ConfigurationError::element)
+                    .containsExactly("V-10", "link");
+            assertThat(error.message()).contains("java.lang.Object");
         });
     }
 

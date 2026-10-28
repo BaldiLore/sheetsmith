@@ -8,15 +8,20 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Validated description of the sheet defined by an exported class. Presets and application defaults are not
- * resolved here, so the description does not depend on configuration.
+ * Validated description of the sheet defined by an exported class. Every value is the effective one, already
+ * merged with the sheet template referenced by the class, if any: the class first, then the template. Presets and
+ * application defaults are not resolved here, so the description does not depend on configuration. The template
+ * itself is not recorded: once merged, it plays no further role.
  *
  * @param type             the exported class
  * @param title            the title, or null when there is no title row
  * @param titleStyle       the declared title style
- * @param options          the layout options
- * @param preset           the preset chosen on the class, possibly {@link TablePreset#INHERIT}
- * @param accentColor      the accent colour chosen on the class, or null to use the application default
+ * @param options          the layout options, with the defaults applied when neither the class nor the template
+ *                         decides
+ * @param preset           the preset chosen on the class or, with a template, on the template, possibly
+ *                         {@link TablePreset#INHERIT}
+ * @param accentColor      the accent colour chosen on the class or on the template, or null to use the
+ *                         application default
  * @param outerBorder      the frame line, or null for no frame
  * @param outerBorderColor the frame colour, or null for automatic
  * @param header           the header slots

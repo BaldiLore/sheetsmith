@@ -53,8 +53,8 @@ import java.util.Map;
  * }
  *
  * &#64;Bean
- * CellConverter&lt;UUID&gt; uuidConverter() {
- *     return (value, context) -&gt; CellValue.text(value.toString());
+ * CellConverter&lt;Duration&gt; durationConverter() {
+ *     return (value, context) -&gt; CellValue.number(value.toMinutes() / 60.0);
  * }
  * </pre>
  * Startup fails with an {@link IllegalStateException} when the handled type of a converter bean cannot be
